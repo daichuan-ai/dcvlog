@@ -1,15 +1,15 @@
-# WorkBuddy 安装与调用
+# WorkBuddy 安装
 
-优先直接发送：
+若当前环境支持 Skills CLI，执行：
 
 ```bash
 npx -y skills add daichuan-ai/dcvlog -g --all
 ```
 
-不要依赖自然语言让 Agent 猜仓库。安装后重新打开 App/刷新环境，再用：
+安装后重启宿主，使用：
 
-> `/dcvlog`
+```text
+/dcvlog
+```
 
-若宿主开始创建或生成新的同名 Skill，立即停止；唯一来源应为 `daichuan-ai/dcvlog`。
-
-说明：WorkBuddy 的手机云端、电脑本地/远程环境可能不是同一个 Skill 运行层。若目标用户只用手机，应以她当前实际运行环境能否持久发现 Skill 为准。
+唯一仓库：`https://github.com/daichuan-ai/dcvlog`

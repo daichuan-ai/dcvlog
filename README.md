@@ -1,104 +1,62 @@
 # DCVlog｜代川的化妆师Vlog编导 Skill
 
-> V1.2.0 实机整合：前5秒固定四方向、标准镜头默认已拍齐、所有选择粗体编号、人设结尾可放弃、最终语气先试读再选，并锁定“旁白不直白自夸妆面”。
+> V1.3.0 主线采访引擎重构版：不再默认从“客人来干嘛”开始，而是先锁定学员最想讲、记忆最深的主切口；允许少量辅料补充，但成稿前强制删减，避免把采访素材全部罗列出来。
 
+**唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
+**唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
 
-> **唯一身份：** `daichuan-ai` / `dcvlog` / `/dcvlog`
->
-> **唯一官方仓库：** `https://github.com/daichuan-ai/dcvlog`
+## 学员安装
 
-这是已经存在的 GitHub Skill，不是让 Agent 临时生成一个相似 Skill。
-
-## 给普通学员：只记两句话
-
-第一次安装，**不要用自然语言让 Agent 猜**。实机测试更稳的是直接复制这条安装命令发送：
+复制这一句给支持 Skills CLI 的 Agent：
 
 ```bash
 npx -y skills add daichuan-ai/dcvlog -g --all
 ```
 
-安装完成后，重新打开 App；以后每次开始写：
+安装完成后重新打开 App。以后开始写：
 
-> **/dcvlog**
-
-自然语言“安装代川的 dcvlog”可能被宿主误解成“帮你创建一个 Skill”，所以当前不作为学员默认教程。
-
-## 正确启动应该发生什么
-
-如果是这个新对话第一次使用，Skill 不应该直接问“今天这个客人来干嘛”，也不应该说“川导开工”这种开发测试口令。
-
-它应该先自然认识化妆师：
-
-> 好，那咱们开始。我先认识一下你。你是哪一年的？
-
-随后一次只问一个：城市 → 做化妆多久 → 当前工作状态/主要业务。认识完以后再进入今天，先确认今天一共几个客人，然后逐个聊。
-
-## 给安装 Agent：不要猜，不要创建
-
-当用户提出安装时：
-
-1. 这是安装现成 GitHub Skill，不是创建 Skill；
-2. 唯一仓库：`daichuan-ai/dcvlog`；
-3. 唯一 Skill name：`dcvlog`；
-4. 不得根据用户历史、职业、旧 Skill 或聊天内容生成替代版；
-5. 若宿主支持 Skills CLI，优先：
-
-```bash
-npx -y skills add daichuan-ai/dcvlog -g --all
+```text
+/dcvlog
 ```
 
-6. 网络受限可以换 GitHub 下载通道，但源文件必须来自上述仓库；
-7. 安装后验证：`name=dcvlog`、`author=daichuan-ai`、`version=1.2.0`；
-8. 安装失败只报告失败原因，禁止创建“差不多”的 Skill 代替。
+## V1.3.0 主要变化
 
-## 这个 Skill 做什么
-
-它面向“会化妆，但不太会把自己做了什么说清楚”的化妆师。
-
-AI 不先替她写稿，而是先进入目标客户的脑子里，再像一个懂化妆师的老师一样聊天式采访。一次只问一个真实问题，把当天已经发生的观察、判断、处理、变化和证据问出来，再装配成自然、可直接录音的 Vlog 旁白。
-
-提问深度以“目标观众愿意听懂”为准，不是把化妆师所有专业知识都挖出来。
-
-适用：日常约妆、普通顾客妆造、工作室一天多个客人的工作 Vlog、普通人化妆私教。
-
-V1.2.0 是从 V1.0.5 开始多轮实机测试后的当前整合版：保留 V1.0.5 的采访、卡壳救援、多客人装配、前5秒选择、结尾人设、本人语气定型等核心能力，同时修复安装/调用混乱、错误替代 Skill、首次人物认识被跳过、开发测试口令残留等问题。
+- 每个新对话仍重新认识化妆师基础资料；
+- 当天先问客人数；
+- 当前客人不再默认问“来干嘛”，先选五种主切口；
+- 锁主线后只深挖 2—4 个问题，再做 1—2 个辅料扫描；
+- 素材分 A/B/C，真实但带散主线的信息可删；
+- 单客人成稿固定只承担五个功能：开场 → 人物事件 → 解决 → 结果画面解释 → 结尾；
+- 多客人第一个最完整，后面递减；最多只在第1和第2个客人间加一次桥接；
+- 前5秒继续固定四方向，后置处理；
+- 标准镜头继续默认已拍齐；
+- 人设结尾可放弃；
+- 最后先试读，再轻量选择语气；
+- 运行 references 从 19 个收拢为 6 个核心文件，开发日志/测试不参与运行。
 
 ## 仓库结构
 
 ```text
 dcvlog/
 ├── README.md
-├── INSTALL_WORKBUDDY.md
 ├── INSTALL_DOUABO.md
+├── INSTALL_WORKBUDDY.md
 ├── VERSION
 ├── CHANGELOG.md
 ├── docs/
-│   └── V1.0.5_TO_V1.2.0_DEVLOG.md
 ├── skills/
 │   └── dcvlog/
 │       ├── SKILL.md
-│       └── references/
+│       └── references/   # 6个运行核心文件
 ├── tests/
-│   ├── ACCEPTANCE.md
-│   └── REGRESSION_CASES.md
 └── tools/
-    └── validate_skill.py
 ```
 
-## 版本身份
+## 版本
 
-- GitHub owner：`daichuan-ai`
-- GitHub repo：`dcvlog`
-- Skill name：`dcvlog`
-- Slash：`/dcvlog`
-- 显示名：`代川 DCVlog｜化妆师Vlog编导`
-- 当前版本：`1.2.0`
+- Skill name: `dcvlog`
+- Slash: `/dcvlog`
+- Version: `1.3.0`
+- Author: `daichuan-ai`
 
-## 版权
-
-Copyright © Daichuan. All rights reserved. 公开仓库用于安装与个人使用测试，不代表授权商业复制、转售或改造成同类收费产品。
-
-
-### V1.2.0 当前重点
-
-前5秒固定四方向：**强画面 / 强情绪 / 强数字 / 纯文案钩子**。基础服务镜头默认已拍齐，不再问“有没有拍妆后/过程”。只要让学员做选择，就用粗体编号；结尾人设有犹豫就放过；最终语气先试读，再轻量选择。
+Copyright © Daichuan. All rights reserved.
