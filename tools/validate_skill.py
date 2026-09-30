@@ -8,7 +8,7 @@ text = SKILL.read_text(encoding="utf-8")
 
 required = {
     "name": "dcvlog",
-    "version": '"1.1.5"',
+    "version": '"1.2.0"',
     "author": '"daichuan-ai"',
 }
 for key, value in required.items():
@@ -22,6 +22,11 @@ for phrase in [
     "你今天一共几个客人？",
     "目标客户",
     "提问深度",
+    "强画面",
+    "强情绪",
+    "强数字",
+    "纯文案钩子",
+    "标准镜头",
 ]:
     if phrase not in text:
         raise SystemExit(f"FAIL: missing behavior marker: {phrase}")
@@ -38,7 +43,7 @@ for p in ROOT.rglob("*.md"):
     t=p.read_text(encoding="utf-8")
     if "daichuan-ai/dc-makeup-vlog" in t:
         raise SystemExit(f"FAIL: stale repo identity in {p}")
-    if 'version=1.0.8' in t and p.name not in {"V1.0.5_TO_V1.1.0_DEVLOG.md", "CHANGELOG.md"}:
+    if 'version=1.0.8' in t and p.name not in {"V1.0.5_TO_V1.2.0_DEVLOG.md", "CHANGELOG.md"}:
         raise SystemExit(f"FAIL: stale version marker in {p}")
 
-print(f"PASS: dcvlog v1.1.5; refs={len(list((SKILL_DIR/'references').glob('*.md')))}")
+print(f"PASS: dcvlog v1.2.0; refs={len(list((SKILL_DIR/'references').glob('*.md')))}")
