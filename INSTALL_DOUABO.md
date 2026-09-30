@@ -1,31 +1,17 @@
-# 豆包工作安装｜学员版
+# 豆包工作安装与调用
 
-只需要说：
+## 给学员复制这一句
 
-> **安装代川的 dcvlog**
+> 安装 GitHub 上 daichuan-ai/dcvlog 的 Skill，只安装现成仓库，不要帮我生成或创建新 Skill。
 
-如果需要更明确：
+如果宿主安装失败，不要接受它临时生成的同名/相似 Skill。
 
-> **安装 daichuan-ai 的 dcvlog**
+安装成功后，新建对话直接输入：
 
-唯一官方仓库：
+> /dcvlog
 
-`https://github.com/daichuan-ai/dcvlog`
+当前实机结果表明：即使技能菜单里暂时选不到，只要 `/dcvlog` 能定位到已安装的 `dcvlog` 并读取 SKILL.md，就可以正常运行。
 
-这是已经存在的 GitHub Skill，不是让豆包工作临时生成一个 Skill。
+首次新对话正确开场应先认识化妆师，而不是直接写稿：
 
-安装完成后，彻底退出 App 再重新打开，让宿主重新扫描技能。然后从技能列表选择 **代川 DCVlog｜化妆师Vlog编导**；如果支持斜杠 Skill，也可以输入：
-
-`/dcvlog`
-
-## 给安装 Agent
-
-若支持 Skills CLI，优先执行：
-
-```bash
-npx -y skills add daichuan-ai/dcvlog -g --all
-```
-
-只允许从 `daichuan-ai/dcvlog` 获取原始文件。安装后验证 `name=dcvlog`、`author=daichuan-ai`、`version=1.0.8`。
-
-如果无法定位或安装，只说明失败原因；**禁止自行生成同名或相似 Skill 代替**。
+> 好，那咱们开始。我先认识一下你。你是哪一年的？

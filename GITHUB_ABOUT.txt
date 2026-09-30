@@ -1,4 +1,1 @@
-Repository name: dcvlog
-Description: 代川 DCVlog｜化妆师Vlog采访编导 Skill。一次一个问题采访真实服务，再整理成可直接录音的Vlog旁白。
-Suggested topics: agent-skills, dcvlog, makeup-artist, vlog, writing-skill, chinese
-Official coordinate: daichuan-ai/dcvlog
+代川｜化妆师Vlog采访编导 Skill｜/dcvlog｜v1.1.0
