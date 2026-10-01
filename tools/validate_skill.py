@@ -4,7 +4,7 @@ root = Path(__file__).resolve().parents[1]
 skill = root / 'skills' / 'dcvlog' / 'SKILL.md'
 text = skill.read_text(encoding='utf-8')
 errors=[]
-for token in ['name: dcvlog','version: "1.5.1"','author: "daichuan-ai"','/dcvlog','场景 / 用途','成熟样本','90%—110%','service_client_total','video_client_total']:
+for token in ['name: dcvlog','version: "1.5.2"','author: "daichuan-ai"','/dcvlog','场景 / 用途','成熟样本','90%—110%','service_client_total','video_client_total','第1个讲故事','40秒']:
     if token not in text:
         errors.append(f'missing {token}')
 refs = re.findall(r'@references/([A-Za-z0-9_.-]+)', text)
@@ -22,6 +22,11 @@ for required in ['makeup-corpus.md','writing-style.md']:
     rt=(skill.parent/'references'/required).read_text(encoding='utf-8')
     if '长度' not in rt:
         errors.append(f'{required} missing mature length calibration')
+
+writing=(skill.parent/'references'/'writing-style.md').read_text(encoding='utf-8')
+for token in ['第1个讲故事，第2个讲重点，第3个以后看结果','不再套单客40秒上限','总长度随客人数增加']:
+    if token not in writing:
+        errors.append(f'writing-style missing {token}')
 interview=(skill.parent/'references'/'interview-engine.md').read_text(encoding='utf-8')
 opening=(skill.parent/'references'/'opening-ending.md').read_text(encoding='utf-8')
 for token in ['禁止再问“这个客人大概什么情况','直接进入第3节的5个切口选择']:
@@ -36,4 +41,4 @@ if errors:
     sys.exit(1)
 print('PASS')
 print(f'references={len(actual)}')
-print('version=1.5.1')
+print('version=1.5.2')
