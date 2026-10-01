@@ -4,7 +4,7 @@ root = Path(__file__).resolve().parents[1]
 skill = root / 'skills' / 'dcvlog' / 'SKILL.md'
 text = skill.read_text(encoding='utf-8')
 errors=[]
-for token in ['name: dcvlog','version: "1.3.0"','author: "daichuan-ai"','/dcvlog']:
+for token in ['name: dcvlog','version: "1.3.1"','author: "daichuan-ai"','/dcvlog']:
     if token not in text: errors.append(f'missing {token}')
 refs = re.findall(r'@references/([A-Za-z0-9_.-]+)', text)
 for ref in sorted(set(refs)):
@@ -17,4 +17,4 @@ if errors:
     sys.exit(1)
 print('PASS')
 print(f'references={len(actual)}')
-print('version=1.3.0')
+print('version=1.3.1')

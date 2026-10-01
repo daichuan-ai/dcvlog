@@ -1,6 +1,6 @@
 # DCVlog｜代川的化妆师Vlog编导 Skill
 
-> V1.3.0 主线采访引擎重构版：不再默认从“客人来干嘛”开始，而是先锁定学员最想讲、记忆最深的主切口；允许少量辅料补充，但成稿前强制删减，避免把采访素材全部罗列出来。
+> V1.3.1 主线采访引擎重构版：不再默认从“客人来干嘛”开始，而是先锁定学员最想讲、记忆最深的主切口；允许少量辅料补充，但成稿前强制删减，避免把采访素材全部罗列出来。
 
 **唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
 **唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
@@ -19,7 +19,7 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 /dcvlog
 ```
 
-## V1.3.0 主要变化
+## V1.3.1 主要变化
 
 - 每个新对话仍重新认识化妆师基础资料；
 - 当天先问客人数；
@@ -56,7 +56,7 @@ dcvlog/
 
 - Skill name: `dcvlog`
 - Slash: `/dcvlog`
-- Version: `1.3.0`
+- Version: `1.3.1`
 - Author: `daichuan-ai`
 
 Copyright © Daichuan. All rights reserved.
