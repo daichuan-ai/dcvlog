@@ -1,8 +1,12 @@
 # 豆包工作安装与更新
 
-## 第一次安装
+## 第一次安装｜优先自然语言
 
-新建对话，直接发送：
+新建对话，直接说：
+
+> 帮我安装代川的 DCVlog 技能，GitHub 来源是 daichuan-ai/dcvlog，安装为全局技能并自动确认。
+
+如果豆包工作支持执行命令，它应等价执行：
 
 ```bash
 npx -y skills add daichuan-ai/dcvlog -g --all
@@ -14,13 +18,21 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 /dcvlog
 ```
 
-## 已安装后更新
+若自然语言安装没有正确执行，直接复制上面的命令即可。
 
-新建对话，直接发送：
+## 已安装后更新｜直接说“更新 DCVlog”
+
+新建对话，直接说：
+
+> 更新 DCVlog
+
+已安装的 DCVlog 会优先尝试执行：
 
 ```bash
 npx -y skills update dcvlog -g -y
 ```
+
+如果当前宿主不能直接执行命令，它会返回这条命令让你复制，不会假装更新成功。
 
 更新完成后完全退出并重新打开 App，再输入 `/dcvlog`。
 

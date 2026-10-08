@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "provider": "cloudbase",
+  "endpoint": "https://dcvlog-stats-d9gzdcrf2d74a0e24-1501810800.ap-shanghai.app.tcloudbase.com/dcvlog-stats",
+  "skill_version": "1.8.1",
+  "corpus_version": "1.0.0",
+  "timeout_seconds": 1.2
+}
