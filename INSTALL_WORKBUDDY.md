@@ -23,7 +23,7 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 如果宿主支持执行命令，Skill 会尝试运行：
 
 ```bash
-npx -y skills update dcvlog -g -y
+npx -y skills add daichuan-ai/dcvlog -g --all
 ```
 
 如果宿主不允许执行命令，它只会返回这条命令，不会假装更新成功。

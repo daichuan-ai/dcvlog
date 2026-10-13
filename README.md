@@ -1,6 +1,6 @@
 # DCVlog｜代川的化妆师内容 Skill
 
-> V1.8.1 CloudBase 匿名统计接通版：完整保留旁白、拼图、持续案例库与自然语言更新，并把匿名功能统计正式接到腾讯云 CloudBase。
+> V1.8.3 拼图比例保护 + 细节裁剪审美修复版：**只修拼图，不动写文案**。锁定原图宽高比，禁止为了版式压扁/拉长人物；细节图必须有明确妆面审美中心，禁止半个额头、半只眼睛和无意义窄条。V1.8.2 的自然语言更新、旁白、案例库与 CloudBase 匿名统计全部保留。
 
 **唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
 **唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
@@ -34,21 +34,32 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 
 ## 已安装用户更新
 
-已安装以后，优先直接说：
+已安装以后，直接说：
 
 > 更新 DCVlog
 
-Skill 会尝试直接执行：
+自 V1.8.2 起不再依赖 `skills update dcvlog`。豆包工作里有些安装会被识别成 `local`，导致 update 找不到远程来源；现在统一从官方 GitHub 仓库重新覆盖安装最新版：
 
 ```bash
-npx -y skills update dcvlog -g -y
+npx -y skills add daichuan-ai/dcvlog -g --all
 ```
 
-如果当前宿主不能执行命令，它会只返回这条命令，不会假装已经更新。
+这也是推荐的手动更新命令。完成后新开聊天或重新加载，再输入 `/dcvlog`。
 
-更新完成后重启宿主，再输入 `/dcvlog`。
+如果宿主不能执行命令，Skill 只会返回这条命令，不会假装更新成功，也不会自行生成一个假的本地 DCVlog。
 
-## V1.8.1 主要变化
+## V1.8.3 主要变化
+
+- 仅更新拼图引擎：原图宽高比锁定，任何版式不得拉伸人物；
+- 新增细节裁剪审美中心与失败裁法；
+- 没有好细节时允许减少局部图数量，不为凑版硬裁；
+- 写文案采访、写作规则、案例库与长度逻辑全部原样保留；
+
+- 修复豆包工作里 `dcvlog` 被识别成 `local` 后，`skills update dcvlog` 报“找不到已安装 Skill”的问题；
+- “更新 DCVlog”改为直接执行 `npx -y skills add daichuan-ai/dcvlog -g --all`；
+- 更新时不再追问“要改哪里/换什么”，不再把维护请求误当成内容编辑任务；
+- 严禁更新失败后现场生成一个假的本地 DCVlog；
+- 更新成功后提示新开聊天或重新加载，再使用 `/dcvlog`；
 
 - 完整继承 V1.7.0 全部功能；
 - 新增匿名事件：打开、写文案开始/完成、拼图开始/完成、更新请求；
@@ -78,11 +89,11 @@ npx -y skills update dcvlog -g -y
 
 ## 匿名使用统计
 
-V1.8.1 可以统计“用了没有、用的是哪一项、有没有完成”，但不会读取学员的具体内容。
+V1.8.3 继续支持统计“用了没有、用的是哪一项、有没有完成”，但不会读取学员的具体内容。
 
 后台配置与查看方法见：`docs/ANALYTICS_SETUP.md`。
 
-> V1.8.1 已接通腾讯云 CloudBase 统计接口。学员无需配置；统计只记录功能事件、匿名 ID 与 Skill 版本。
+> CloudBase 统计接口继续沿用；学员无需配置，统计只记录功能事件、匿名 ID 与 Skill 版本。
 
 ## 仓库结构
 
@@ -115,7 +126,7 @@ dcvlog/
 
 - Skill name: `dcvlog`
 - Slash: `/dcvlog`
-- Skill Version: `1.8.1`
+- Skill Version: `1.8.3`
 - Corpus Version: `1.0.0`
 - Author: `daichuan-ai`
 

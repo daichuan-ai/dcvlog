@@ -26,17 +26,16 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 
 > 更新 DCVlog
 
-已安装的 DCVlog 会优先尝试执行：
+已安装的 DCVlog 会直接执行：
 
 ```bash
-npx -y skills update dcvlog -g -y
+npx -y skills add daichuan-ai/dcvlog -g --all
 ```
 
 如果当前宿主不能直接执行命令，它会返回这条命令让你复制，不会假装更新成功。
 
 更新完成后完全退出并重新打开 App，再输入 `/dcvlog`。
 
-如果更新命令提示找不到已安装的 `dcvlog`，重新执行第一次安装命令覆盖即可。
 
 若安装 Agent 找不到仓库，不允许它自行生成替代 Skill。唯一来源是：
 `https://github.com/daichuan-ai/dcvlog`

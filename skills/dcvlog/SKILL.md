@@ -6,13 +6,13 @@ description: "代川 DCVlog：化妆师Vlog编导 + 韩系作品拼图 + 可持�
 description_zh: "代川 DCVlog｜化妆师Vlog采访编导 + 韩系作品拼图。支持旁白文案与1—6张妆面照片拼图两个入口。"
 description_en: "Interview-driven Vlog director and Korean-editorial makeup collage maker. Invoke with /dcvlog."
 category: writing
-version: "1.8.1"
+version: "1.8.3"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
 ---
 
-# 代川 DCVlog｜化妆师Vlog编导 V1.8.1
+# 代川 DCVlog｜化妆师Vlog编导 V1.8.3
 
 ## 一句话任务
 
@@ -62,7 +62,7 @@ DCVlog 现在有两个独立入口：
 
 ### 匿名使用统计｜后台静默、绝不打断任务
 
-V1.8.1 已接入腾讯云 CloudBase 匿名功能事件统计。配置见 `telemetry-config.json` 与仓库 `docs/ANALYTICS_SETUP.md`。
+V1.8.3 继续使用腾讯云 CloudBase 匿名功能事件统计。配置见 `telemetry-config.json` 与仓库 `docs/ANALYTICS_SETUP.md`。
 
 **统计只允许记录功能事件，不允许记录任何内容。**
 
@@ -101,17 +101,25 @@ V1.8.1 已接入腾讯云 CloudBase 匿名功能事件统计。配置见 `teleme
 - `升级 DCVlog`
 - `把 DCVlog 更新到最新版`
 
-**不要进入文案采访或拼图流程。**
+**不要进入文案采访或拼图流程。不要先尝试 `skills update`，也不要先检查本地 Skill 有没有远程来源。**
 
-如果当前宿主允许执行命令，直接执行：
+原因：豆包工作等宿主里，DCVlog 可能被识别成 `local` 本地 Skill，`skills update dcvlog` 会出现 `No installed skills found matching: dcvlog`。更新时统一把“重新从官方 GitHub 来源覆盖安装”视为更新。
+
+如果当前宿主允许执行命令，先静默 best-effort 记录 `update_requested`，然后直接执行：
 
 ```bash
-npx -y skills update dcvlog -g -y
+npx -y skills add daichuan-ai/dcvlog -g --all
 ```
 
-执行完成后只告诉用户：更新完成后重启/重新打开宿主，再输入 `/dcvlog`。
+这条命令使用唯一官方来源 `daichuan-ai/dcvlog`，同名 Skill 直接以远端最新版重新安装。不要自行生成一个新的本地 DCVlog，不要修改仓库来源，不要把用户带进“你要改什么内容”的对话。
+
+命令成功后只告诉用户：
+
+> DCVlog 已重新拉取最新版。新开一个聊天或重新加载后，再输入 `/dcvlog` 使用新版本。
 
 如果当前宿主不能执行命令，不要假装已经更新；只返回上面这一条命令，让用户复制执行。
+
+如果命令真实失败，原样说明关键错误；不要退回“本地改写 Skill / 现场生成 Skill”作为替代方案。
 
 第一次还没安装时，Skill 自身无法负责“安装自己”。对外安装说明统一使用仓库 `daichuan-ai/dcvlog`。
 
@@ -161,6 +169,8 @@ npx -y skills update dcvlog -g -y
 如果用户选“两种都要”，输出数量必须严格等于 `N + 1`：1张总拼图 + N张独立作品页。生成工具一次无法输出完时，必须继续生成后续页面，不能只做其中一类。
 
 工作室名与签名不能写死。允许用户自行输入，并询问展示为中文、英文/拼音，或中英都要。若用户选拼音，保留已有拉丁字母品牌词，只把中文部分转拼音；不得擅自发明英文名。
+
+拼图输出新增两条硬闸门：**任何照片不得横向/纵向拉伸变形；任何细节裁剪必须有明确审美中心，禁止随机截半个额头、半只眼睛或没有信息价值的窄条。** 放不进当前版式时，改裁切、改留白、改槽位比例或换版式，不能挤压原图。
 
 默认目标不是“教用户排版”，而是**直接把成品做出来**。不要先给教程，不要把设计工作重新丢回用户。
 
