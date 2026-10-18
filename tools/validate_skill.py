@@ -7,13 +7,13 @@ errors=[]
 for rel in ['skills/dcvlog/tools/telemetry.py','skills/dcvlog/telemetry-config.json','docs/ANALYTICS_SETUP.md']:
     if not (root/rel).exists():
         errors.append(f'missing telemetry file {rel}')
-for token in ['name: dcvlog','version: "1.8.3"','author: "daichuan-ai"','/dcvlog','我要开始写文案','我要做拼图','更新 DCVlog','加入 DCVlog 新案例库','扫描新案例库，升级当前方法','场景 / 用途','成熟样本','90%—110%','service_client_total','video_client_total','第1个讲故事','40秒','collage-engine.md','代川很乐意帮你完成','代川来陪你把今天这条捋出来','corpus/corpus-index.md','corpus/current-patterns.md','dcvlog_open','write_vlog_start','write_vlog_complete','collage_start','collage_complete','匿名使用统计']:
+for token in ['name: dcvlog','version: "1.8.4"','author: "daichuan-ai"','/dcvlog','我要开始写文案','我要做拼图','更新 DCVlog','加入 DCVlog 新案例库','扫描新案例库，升级当前方法','场景 / 用途','成熟样本','90%—110%','service_client_total','video_client_total','第1个讲故事','40秒','collage-engine.md','aesthetic-interview.md','visual-result-draft-gate.md','batch-003-raw-20261016','代川很乐意帮你完成','代川来陪你把今天这条捋出来','corpus/corpus-index.md','corpus/current-patterns.md','dcvlog_open','write_vlog_start','write_vlog_complete','collage_start','collage_complete','匿名使用统计']:
     if token not in text:
         errors.append(f'missing {token}')
-# top-level runtime refs remain 7 for compatibility
+# 新增两个写作参考；7个旧参考必须全部保留
 actual = list((skill.parent/'references').glob('*.md'))
-if len(actual) != 7:
-    errors.append(f'expected 7 top-level refs, got {len(actual)}')
+if len(actual) != 9:
+    errors.append(f'expected 9 top-level refs, got {len(actual)}')
 for required in ['makeup-corpus.md','writing-style.md','interview-engine.md']:
     rt=(skill.parent/'references'/required).read_text(encoding='utf-8')
     if '场景' not in rt:
@@ -39,21 +39,29 @@ for token in ['1—6张','3:4','自动选主图','禁止默认做普通2×2宫�
     if token not in collage:
         errors.append(f'collage-engine missing {token}')
 corpus_root=skill.parent/'references'/'corpus'
-for rel in ['CORPUS_VERSION','corpus-index.md','current-patterns.md','batch-001-baseline/cases.md','batch-002-new/README.md']:
+for rel in ['CORPUS_VERSION','corpus-index.md','current-patterns.md','batch-001-baseline/cases.md','batch-002-new/README.md','batch-003-raw-20261016/cases.md','batch-003-raw-20261016/selection-guide.md']:
     if not (corpus_root/rel).exists():
         errors.append(f'missing corpus file {rel}')
-if (corpus_root/'CORPUS_VERSION').exists() and (corpus_root/'CORPUS_VERSION').read_text(encoding='utf-8').strip() != '1.0.0':
+if (corpus_root/'CORPUS_VERSION').exists() and (corpus_root/'CORPUS_VERSION').read_text(encoding='utf-8').strip() != '1.1.0':
     errors.append('unexpected corpus version')
 if (corpus_root/'corpus-index.md').exists():
     ci=(corpus_root/'corpus-index.md').read_text(encoding='utf-8')
-    for token in ['Batch 001','LOCKED','Batch 002','OPEN','加入 DCVlog 新案例库','扫描新案例库，升级当前方法']:
+    for token in ['Batch 001','LOCKED','Batch 002','OPEN','Batch 003','19条','加入 DCVlog 新案例库','扫描新案例库，升级当前方法']:
         if token not in ci:
             errors.append(f'corpus-index missing {token}')
+raw=(corpus_root/'batch-003-raw-20261016'/'cases.md')
+if raw.exists():
+    count=len(re.findall(r'^## 案例 \d\d$', raw.read_text(encoding='utf-8'), re.M))
+    if count != 19:
+        errors.append(f'expected 19 original cases, got {count}')
+else:
+    count=0
 if errors:
     print('FAIL')
     print('\n'.join(errors))
     sys.exit(1)
 print('PASS')
 print(f'top_level_references={len(actual)}')
-print('version=1.8.3')
-print('corpus_version=1.0.0')
+print(f'raw_cases={count}')
+print('version=1.8.4')
+print('corpus_version=1.1.0')

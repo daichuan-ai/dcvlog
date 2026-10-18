@@ -1,6 +1,6 @@
 # DCVlog 匿名使用统计｜CloudBase 已接通
 
-DCVlog V1.8.3 已接入腾讯云 CloudBase 匿名功能统计，仓库发布后无需学员额外配置。
+DCVlog V1.8.4 继续沿用 V1.8.3 接入的腾讯云 CloudBase 匿名功能事件统计，仓库发布后无需学员额外配置。
 
 ## 统计什么
 
@@ -31,7 +31,7 @@ Skill 自带脚本只向统计接口提交三个字段：
 {
   "event_name": "collage_start",
   "anonymous_id": "随机匿名UUID",
-  "skill_version": "1.8.3"
+  "skill_version": "1.8.4"
 }
 ```
 

@@ -1,6 +1,6 @@
 # DCVlog｜代川的化妆师内容 Skill
 
-> V1.8.3 拼图比例保护 + 细节裁剪审美修复版：**只修拼图，不动写文案**。锁定原图宽高比，禁止为了版式压扁/拉长人物；细节图必须有明确妆面审美中心，禁止半个额头、半只眼睛和无意义窄条。V1.8.2 的自然语言更新、旁白、案例库与 CloudBase 匿名统计全部保留。
+> V1.8.4 真实原文与初级化妆师采访修复版：接入19条不改动的成熟Vlog原文，新增人物观察、审美取舍、妆后画面及反模板闸门；不再把“裙子配色+客人满意”当成熟成稿。完整继承 V1.8.3 的拼图比例保护、原有双入口与 CloudBase 匿名统计。
 
 **唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
 **唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
@@ -47,6 +47,14 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 这也是推荐的手动更新命令。完成后新开聊天或重新加载，再输入 `/dcvlog`。
 
 如果宿主不能执行命令，Skill 只会返回这条命令，不会假装更新成功，也不会自行生成一个假的本地 DCVlog。
+
+## V1.8.4 写文案主要变化
+
+- 新增 `references/aesthetic-interview.md`：初级化妆师只会回答技术步骤时，帮助找真实人物印象、审美选择和妆后状态。
+- 新增 `references/visual-result-draft-gate.md`：不允许“生日+裙子配色+客人满意”的固定模板冒充工作Vlog；检查结果画面和真实性。
+- 新增 `references/corpus/batch-003-raw-20261016/`：保存19条原始Vlog，原文逐字不改；通过独立索引找到同类型客人段落。
+- 单客视频比较单个客人段落长度，不拿完整多客人Vlog全篇作标尺。
+- 保留V1.8.3拼图、CloudBase功能事件统计、双入口和更新功能。**这份包还需由你安装/更新到豆包，不能视为已在手机生效。**
 
 ## V1.8.3 主要变化
 
@@ -126,8 +134,8 @@ dcvlog/
 
 - Skill name: `dcvlog`
 - Slash: `/dcvlog`
-- Skill Version: `1.8.3`
-- Corpus Version: `1.0.0`
+- Skill Version: `1.8.4`
+- Corpus Version: `1.1.0`
 - Author: `daichuan-ai`
 
 Copyright © Daichuan. All rights reserved.
