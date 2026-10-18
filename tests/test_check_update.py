@@ -13,7 +13,7 @@ spec.loader.exec_module(check_update)
 
 class VersionCheckTests(unittest.TestCase):
     def test_installed_version_parses_skill(self):
-        self.assertEqual(check_update.installed_version(), "1.8.7")
+        self.assertEqual(check_update.installed_version(), (SCRIPT.parents[1] / "VERSION").read_text().strip())
 
     def test_detects_new_version(self):
         self.assertEqual(check_update.compare_versions("1.8.6", "1.8.7")["status"], "update_available")

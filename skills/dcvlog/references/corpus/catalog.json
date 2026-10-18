@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "B001-COLLECTION",
+      "source_path": "batch-001-baseline/cases.md",
+      "status": "locked",
+      "raw_hash": "386f6aa3d9f2763015fb6ff0b4ccf97c4fad842a004ea2e45a076efe9dfacbc1",
+      "client_count": null,
+      "video_structure": "mixed",
+      "opening_type": null,
+      "ending_type": null,
+      "style_tags": []
+    },
+    {
+      "id": "B003-COLLECTION",
+      "source_path": "batch-003-raw-20261016/cases.md",
+      "status": "locked",
+      "raw_hash": "4e0edfafe1adfa894213b7cbbe7778a46d67e5525e79fc8afaa3386336dbf067",
+      "client_count": null,
+      "video_structure": "mixed",
+      "opening_type": null,
+      "ending_type": null,
+      "style_tags": []
+    }
+  ]
+}
