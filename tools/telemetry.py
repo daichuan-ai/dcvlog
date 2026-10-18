@@ -84,7 +84,7 @@ def capture(event: str) -> None:
     payload = {
         "event_name": event,
         "anonymous_id": _anonymous_id(),
-        "skill_version": str(cfg.get("skill_version", "1.8.3")),
+        "skill_version": (SKILL_ROOT / "VERSION").read_text(encoding="utf-8").strip(),
     }
     data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(

@@ -111,7 +111,7 @@ def prepare_submission(config: dict, final_text: str, facts_summary: str,
     return {
         "submission_id": submission_id,
         "anonymous_id": _anonymous_id(),
-        "skill_version": "1.8.7",
+        "skill_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip(),
         "client_count": client_count,
         "draft_status": draft_status,
         "final_text": final_text,

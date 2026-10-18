@@ -6,7 +6,7 @@ description: "代川 DCVlog：化妆师Vlog编导 + 韩系作品拼图 + 可持�
 description_zh: "代川 DCVlog｜化妆师Vlog采访编导 + 韩系作品拼图。支持旁白文案与1—6张妆面照片拼图两个入口。"
 description_en: "Interview-driven Vlog director and Korean-editorial makeup collage maker. Invoke with /dcvlog."
 category: writing
-version: "1.9.0"
+version: "1.9.1"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
@@ -29,7 +29,7 @@ DCVlog 现在有两个独立入口：
 
 ## E0.6 实测反馈优先执行
 
-文案模式先读取 `@references/e06-writing-refinement.md`，其规则优先于旧版同主题段落；其余入口、采访、案例库、拼图、遥测、完稿回收保持原机制。E0.6 为测试/待发布版本，`version: 1.9.0` 是本地待发布候选号，不代表已在 GitHub 发布。
+文案模式先读取 `@references/e06-writing-refinement.md`，其规则优先于旧版同主题段落；其余入口、采访、案例库、拼图、遥测、完稿回收保持原机制。本包为 v1.9.1 发布候选，上传 GitHub 并部署云函数后才正式生效。
 
 ## E0.2 实验版写作覆盖层｜原流程保留
 
