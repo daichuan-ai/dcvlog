@@ -1,6 +1,6 @@
 # DCVlog｜代川的化妆师内容 Skill
 
-> **V1.8.7 为自愿完稿回收公测包。**完整继承V1.8.6的妆后作品表达、启动静默查新、19条原始案例、真实性防线、拼图与匿名统计。新功能在学员首次明确同意、豆包工作实际支持执行本地脚本、腾讯云后台已开启公测的情况下，尝试回传完整最终旁白。**仅更新 Skill 不代表后台已正常收到文案，必须实机验证。**
+> **当前正式版本：V1.9.2。** 包含采访式Vlog写稿、妆后作品表达、拼图、案例库、匿名事件统计与经学员同意的完稿回收。云端收稿需要独立部署与实机验收。
 
 **唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
 **唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
@@ -52,9 +52,9 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 
 ## 代川更新 GitHub 的正确文件
 
-本仓库根目录真正使用的 Skill 在 `skills/dcvlog/SKILL.md`，**不要把四项的“Skill-only”安装包直接上传到 GitHub 根目录**，否则只会出现根目录重复的 `SKILL.md` / `references` / `telemetry-config.json`，未必更新实际安装来源。
+本仓库保留两套兼容入口：根目录 `SKILL.md` 与 `skills/dcvlog/SKILL.md`；两处必须保持同版，**不要把四项的“Skill-only”安装包直接上传到 GitHub 根目录**，否则只会出现根目录重复的 `SKILL.md` / `references` / `telemetry-config.json`，未必更新实际安装来源。
 
-更新 GitHub 只用**完整项目更新包**：解压后进入解压目录，把**里面全部文件和文件夹（包含`skills`文件夹）**拖入 GitHub 仓库首页的 `Add file → Upload files`，覆盖提交。不要只传四项目录的Skill-only包，也不要拖一个最外层总文件夹进去。确认仓库的 `VERSION=1.8.7` 且 `skills/dcvlog/SKILL.md` 的 `version: "1.8.7"`，再让学员在豆包工作说“更新 DCVlog”，完全退出重开并输入 `/dcvlog`。**收稿后台须按 `docs/REVIEW_PILOT_SETUP.md` 完成公开模式和限频设置；先完成服务器再发布 Skill。**
+更新 GitHub 只用**完整项目更新包**：解压后进入解压目录，把**里面全部文件和文件夹（包含`skills`文件夹）**拖入 GitHub 仓库首页的 `Add file → Upload files`，覆盖提交。不要只传四项目录的Skill-only包，也不要拖一个最外层总文件夹进去。确认仓库根目录和 `skills/dcvlog/` 的 `VERSION` 均为 `1.9.2`，且两处 `SKILL.md` 的 `version` 都为 `1.9.2`，再让学员在豆包工作说“更新 DCVlog”，完全退出重开并输入 `/dcvlog`。**收稿后台须按 `docs/REVIEW_PILOT_SETUP.md` 完成公开模式和限频设置；先完成服务器再发布 Skill。**
 
 ## V1.8.7 自愿公测：完稿回收
 
@@ -170,7 +170,7 @@ dcvlog/
 
 - Skill name: `dcvlog`
 - Slash: `/dcvlog`
-- Skill Version: `1.8.7`
+- Skill Version: `1.9.2`
 - Corpus Version: `1.2.0`
 - Author: `daichuan-ai`
 

@@ -1,0 +1,7 @@
+DCVlog v1.9.2：版本一致性修复
+
+1. 此包为 GitHub 仓库完整覆盖包。解压后把内部全部文件夹和文件一起上传至仓库根目录，Commit changes。
+2. 核验根目录 VERSION 和 skills/dcvlog/VERSION 都是 1.9.2；两处 SKILL.md 版本也都是 1.9.2。
+3. 腾讯云 dcvlog-review 服务端当前白名单是 1.8.7 / 1.9.0 / 1.9.1。要启用 1.9.2 的文案回收，还需在云函数 index.js 的白名单中加入 "1.9.2"，并点击部署；本包 cloudbase/review-collector/index.js 已预先加入。
+4. GitHub 上传成功不代表学员本地已经更新；需在学员真实使用的宿主重新安装并核对加载目录中的 VERSION。
+5. 历史说明中的 1.8.7 可能是版本沿革，不等于当前实际运行版本。

@@ -1,0 +1,8 @@
+DCVlog v1.9.1 版本号修复
+
+1. 将压缩包根目录文件上传到 GitHub 仓库 main 分支，覆盖同名文件（包含 skills/dcvlog 目录）。
+2. 重要：cloudbase/review-collector/index.js 的服务端白名单也已修改；必须将这个云函数重新部署到腾讯云，否则新版本的完整文案提交会返回 400。只上传 GitHub 不会更新云函数。
+3. 请先部署云函数，再让学员更新 Skill。
+4. 本次未增加平台来源识别，也没有修改数据库表结构。
+5. 客户端版本从 VERSION 文件读取；telemetry-config.json 的版本仅作展示兼容。
+6. 发布后分别进行一次创作完成事件和一篇经同意的文案提交，核对数据库 skill_version = 1.9.1。
