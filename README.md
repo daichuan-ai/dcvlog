@@ -170,7 +170,7 @@ dcvlog/
 
 - Skill name: `dcvlog`
 - Slash: `/dcvlog`
-- Skill Version: `1.8.7`
+- Skill Version: `1.9.0`
 - Corpus Version: `1.2.0`
 - Author: `daichuan-ai`
 
