@@ -1,0 +1,7 @@
+DCVlog v1.9.2 完整修复版
+
+1. 把本文件夹内全部文件和文件夹拖到 GitHub 仓库 daichuan-ai/dcvlog 的根目录 Upload files 页面，然后点击 Commit changes。不要上传外层文件夹或 ZIP 本身。
+2. 根目录与 skills/dcvlog/ 的 SKILL.md、VERSION、references、tools 已完整同步。
+3. cloudbase/review-collector/index.js 已取消固定版本白名单，只接受形如 1.9.2 的数字三段版本。GitHub 上传不会自动部署腾讯云；如果腾讯云线上已经改成同样的正则校验，就不用再操作；否则腾讯云仍需单独部署。
+4. GitHub 网页上传覆盖同名文件不会删除仓库中多余的旧文件。如需清理遗留文件，需另外删除。
+5. 学员现有安装不会因为 GitHub 更新而自动变更。

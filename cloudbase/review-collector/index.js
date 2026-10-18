@@ -41,7 +41,7 @@ function validate(event, env) {
     return { error: respond(403, "consent_required") };
   }
   if (!UUID.test(data.submission_id || "") || !/^\d+\.\d+\.\d+$/.test(data.skill_version || "") ||
-      data.skill_version !== "1.8.7" || !Number.isInteger(data.client_count) ||
+!Number.isInteger(data.client_count) ||
       data.client_count < 1 || data.client_count > 20 || !["ready", "limited"].includes(data.draft_status) ||
       typeof data.final_text !== "string" || typeof data.facts_summary !== "string") {
     return { error: respond(400, "invalid_fields") };

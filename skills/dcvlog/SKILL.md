@@ -6,13 +6,13 @@ description: "代川 DCVlog：化妆师Vlog编导 + 韩系作品拼图 + 可持�
 description_zh: "代川 DCVlog｜化妆师Vlog采访编导 + 韩系作品拼图。支持旁白文案与1—6张妆面照片拼图两个入口。"
 description_en: "Interview-driven Vlog director and Korean-editorial makeup collage maker. Invoke with /dcvlog."
 category: writing
-version: "1.9.0"
+version: "1.9.2"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
 ---
 
-# 代川 DCVlog｜化妆师Vlog编导 V1.9.0（E0.6 候选发布版）
+# 代川 DCVlog｜化妆师Vlog编导 V1.9.2（正式更新版）
 
 ## 一句话任务
 
@@ -29,11 +29,11 @@ DCVlog 现在有两个独立入口：
 
 ## E0.6 实测反馈优先执行
 
-文案模式先读取 `@references/e06-writing-refinement.md`，其规则优先于旧版同主题段落；其余入口、采访、案例库、拼图、遥测、完稿回收保持原机制。E0.6 为测试/待发布版本，`version: 1.9.0` 是本地待发布候选号，不代表已在 GitHub 发布。
+文案模式先读取 `@references/e06-writing-refinement.md`，其规则优先于旧版同主题段落；其余入口、采访、案例库、拼图、遥测、完稿回收保持原机制。本包为 v1.9.1 发布候选，上传 GitHub 并部署云函数后才正式生效。
 
 ## E0.2 实验版写作覆盖层｜原流程保留
 
-**仅文案模式**：主体创作按 `@references/creative-engine-e02.md`，交付前按 `@references/delivery-checklist-e02.md`。这两份文件对旧版写作准入、案例选用、语气局部重写与篇幅硬限制有优先权；但**不得覆盖**开场四方向与真实镜头确认、结尾、视频客人数、标准镜头、事实证据、拼图、匿名统计及自愿收稿。下面仍保留的 `NEED_ASK / READY / LIMITED_DRAFT` 等旧规定仅作历史兼容参考，不能阻止有真实基础信息的学员获得可试读初稿。正式成稿必须通过交付检查。此包为本地实验版，不是已发布的1.8.7官方升级。
+**仅文案模式**：主体创作按 `@references/creative-engine-e02.md`，交付前按 `@references/delivery-checklist-e02.md`。这两份文件对旧版写作准入、案例选用、语气局部重写与篇幅硬限制有优先权；但**不得覆盖**开场四方向与真实镜头确认、结尾、视频客人数、标准镜头、事实证据、拼图、匿名统计及自愿收稿。下面仍保留的 `NEED_ASK / READY / LIMITED_DRAFT` 等旧规定仅作历史兼容参考，不能阻止有真实基础信息的学员获得可试读初稿。正式成稿必须通过交付检查。当前为正式更新版，沿用历史规则时以本版最新规则为准。
 
 ## 写文案的事实底线（E0.2）
 
