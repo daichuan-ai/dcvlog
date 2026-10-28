@@ -1,6 +1,6 @@
 # DCVlog｜代川的化妆师内容 Skill
 
-> **当前正式版本：V1.9.3。** 包含采访式Vlog写稿、妆后作品表达、拼图、案例库、匿名事件统计与经学员同意的完稿回收。云端收稿需要独立部署与实机验收。
+> **当前正式版本：V1.9.4。** 包含采访式Vlog写稿、妆后作品表达、拼图、案例库、匿名事件统计与经学员同意的完稿回收。云端收稿需要独立部署与实机验收。
 
 **唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
 **唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
@@ -38,6 +38,10 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 
 **已取得1.9.3及以后入口的学员：**每次输入 `/dcvlog` 自动核对并同步官方最新文件；无需另选更新。明确说“更新 DCVlog”也调用同一更新器。宿主若不能重读新指令，仍需重新加载一次，不能承诺所有平台热更新。
 
+**1.9.4 更新修复：**支持旧包仅在VERSION标注版本；主站/提交API不可用时改读官方codeload主分支ZIP，使用包内完整提交标识和Python标准库解包、验证。旧安装第一次取得新工具的具体流程见 [豆包旧版迁移](INSTALL_DOUABO.md)，不依赖学员自己排查Git或运行解压命令；尚未取得新工具的旧入口仍需完成一次迁移。
+
+**1.9.4 范本参与写稿：**选强画面时先实际读取60条身份开头，首次正文前读取60条妆前、50条妆后创作范本及同类完整案例，内部匹配改写并在交稿前对照。`tools/case_catalog.py examples` 直接输出范本正文，`--part opening` 单独读取开头；不是只列目录或编号。不增加学员提问，采访、照片邀请、拼图与收稿许可沿用原流程。模型是否实际执行仍须用首稿实测核验。
+
 **1.9.2及更早的旧学员：**先从官方来源完整安装一次新版，核对当前宿主实际加载的 `SKILL.md`、`VERSION` 和 `tools/update_skill.py`，重新加载后进入自动更新机制。首次获取仍可使用：
 
 ```bash
@@ -50,7 +54,7 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 
 本仓库保留两套兼容入口：根目录 `SKILL.md` 与 `skills/dcvlog/SKILL.md`；两处必须保持同版，**不要把四项的“Skill-only”安装包直接上传到 GitHub 根目录**，否则只会出现根目录重复的 `SKILL.md` / `references` / `telemetry-config.json`，未必更新实际安装来源。
 
-更新 GitHub 只用**完整项目更新包**：解压后进入解压目录，把**里面全部文件和文件夹（包含`skills`文件夹）**拖入 GitHub 仓库首页的 `Add file → Upload files`，覆盖提交。不要只传四项目录的Skill-only包，也不要拖一个最外层总文件夹进去。确认仓库根目录和 `skills/dcvlog/` 的 `VERSION` 均为 `1.9.3`，且两处 `SKILL.md` 的 `version` 都为 `1.9.3`，再让学员在豆包工作说“更新 DCVlog”，完全退出重开并输入 `/dcvlog`。**收稿后台须按 `docs/REVIEW_PILOT_SETUP.md` 完成公开模式和限频设置；先完成服务器再发布 Skill。**
+更新 GitHub 只用**完整项目更新包**：解压后进入解压目录，把**里面全部文件和文件夹（包含`skills`文件夹）**拖入 GitHub 仓库首页的 `Add file → Upload files`，覆盖提交。不要只传四项目录的Skill-only包，也不要拖一个最外层总文件夹进去。确认仓库根目录和 `skills/dcvlog/` 的 `VERSION` 均为 `1.9.4`，且两处 `SKILL.md` 的 `version` 都为 `1.9.4`，再让学员在豆包工作说“更新 DCVlog”，完全退出重开并输入 `/dcvlog`。**收稿后台须按 `docs/REVIEW_PILOT_SETUP.md` 完成公开模式和限频设置；先完成服务器再发布 Skill。**
 
 ## V1.8.7 自愿公测：完稿回收
 
@@ -166,7 +170,7 @@ dcvlog/
 
 - Skill name: `dcvlog`
 - Slash: `/dcvlog`
-- Skill Version: `1.9.3`
+- Skill Version: `1.9.4`
 - Corpus Version: `1.2.0`
 - Author: `daichuan-ai`
 

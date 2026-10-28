@@ -6,13 +6,13 @@ description: "代川 DCVlog：化妆师Vlog编导 + 韩系作品拼图 + 可持�
 description_zh: "代川 DCVlog｜化妆师Vlog采访编导 + 韩系作品拼图。支持旁白文案与1—6张妆面照片拼图两个入口。"
 description_en: "Interview-driven Vlog director and Korean-editorial makeup collage maker. Invoke with /dcvlog."
 category: writing
-version: "1.9.3"
+version: "1.9.4"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
 ---
 
-# 代川 DCVlog｜化妆师Vlog编导 V1.9.3（正式更新版）
+# 代川 DCVlog｜化妆师Vlog编导 V1.9.4（正式更新版）
 
 ## 一句话任务
 
@@ -30,6 +30,8 @@ DCVlog 现在有两个独立入口：
 ## E0.6 实测反馈优先执行
 
 文案模式先读取 `@references/e06-writing-refinement.md`，其规则优先于旧版同主题段落；其余入口、采访、案例库、拼图、遥测、完稿回收保持原机制。本包为正式版；云端收稿部署与 Skill 本地更新分别核验，不能以仓库发布代替云端验收。
+
+**文案模式的案例读取不能跳过：**选“1.强画面”后，先用 `tools/case_catalog.py examples --part opening` 读取60条身份开头正文再给候选；采访完成、第一次落笔前，用 `tools/case_catalog.py examples` 读取60条妆前、50条妆后正文，并实际阅读1—2段同类完整案例。命令须用本次实际加载目录的绝对路径。`list`、索引和规则文件不等于范本正文；无法执行时直接读 `references/corpus/batch-002-new/B002-001.md`（仅强画面）、`B002-002.md`、`B002-003.md`。按E0.6内部选定对应范本并对照改写，不能直接把采访摘要当成稿；不增加学员问题，不展示内部案例分析。
 
 ## E0.2 实验版写作覆盖层｜原流程保留
 
@@ -50,10 +52,11 @@ python3 "<当前实际加载的dcvlog目录>/tools/update_skill.py" --skill-dir 
 ```
 
 - 更新器核对官方 `daichuan-ai/dcvlog` 的 `main` 提交和安装文件，不只比较版本号。同版本上传新案例也能在下次启动时同步。旧 `tools/check_update.py` 仅保留为只读版本诊断，不用它的版本结果代替自动同步。
+- 兼容仅在 `VERSION` 中标注版本的豆包旧包。主站或API不可用时，更新器会尝试官方压缩包入口；不要改用第三方镜像、拼接系统unzip命令或修改网络设置。
 - `updated` 且 `verified:true`：已在实际加载目录备份、替换并读回校验；立即重新读取该目录的新 `SKILL.md` 和当前模式所需 references，再继续，不再让学员确认安装。若宿主无法重新读取新指令，明确提示重新加载／新开会话，不能宣称已热加载。
 - `up_to_date` 且 `verified:true`：静默进入原流程，不显示版本菜单。
 - 无网络、无执行／写入权限、更新失败或目录不明：保留现有安装，简短说明“本次未能确认／同步最新版”，再提供当前可用功能；不称已更新，不改宿主权限，不转而更新另一份全局目录。
-- 安装旧版、缺少更新器的学员，需要先完整取得一次新版及正确加载目录。GitHub 发布不会自动改变旧会话中的旧启动规则。首次安装仍从唯一官方来源进行；其后按本节自动同步。
+- 缺少更新器时，按官方 `INSTALL_DOUABO.md` 的“旧版迁移”获取官方工具，并指定当前实际加载目录完成一次迁移。不能运行不存在的工具；不能仅更新另一份全局副本。GitHub发布不会自动改变旧会话中的旧启动规则。
 
 最稳定入口：
 
