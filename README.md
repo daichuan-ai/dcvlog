@@ -1,6 +1,6 @@
 # DCVlog｜代川的化妆师内容 Skill
 
-> **当前正式版本：V1.9.2。** 包含采访式Vlog写稿、妆后作品表达、拼图、案例库、匿名事件统计与经学员同意的完稿回收。云端收稿需要独立部署与实机验收。
+> **当前正式版本：V1.9.3。** 包含采访式Vlog写稿、妆后作品表达、拼图、案例库、匿名事件统计与经学员同意的完稿回收。云端收稿需要独立部署与实机验收。
 
 **唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
 **唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
@@ -30,31 +30,27 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 1. 我要开始写文案
 2. 我要做拼图
 
-**启动查新：**用户输入 `/dcvlog` 时，Skill先静默查询官方仓库 `VERSION`；有新版本才显示“更新/继续使用”。无网或查询失败直接正常使用，不弹错误。功能依赖宿主允许联网读取或运行检查脚本；没有这些能力时无法保证完成查新，也不会假装已查。
+**启动自动更新：**用户输入 `/dcvlog` 时，使用实际加载目录中的 `tools/update_skill.py` 自动核对官方 `main` 提交，完整同步并读回文件；不再询问“更新/继续使用”。同版本新增案例也会同步。更新前保留备份和本地新增文件，不触碰 `~/.dcvlog/` 的用户状态。成功后重读新入口继续；无网络、无执行/写入权限时如实说明本次未同步，不假装已是最新版。
 
 也可以直接自然语言输入“我要开始写文案”或“我要做拼图”。
 
 ## 已安装用户更新
 
-已安装以后，直接说：
+**已取得1.9.3及以后入口的学员：**每次输入 `/dcvlog` 自动核对并同步官方最新文件；无需另选更新。明确说“更新 DCVlog”也调用同一更新器。宿主若不能重读新指令，仍需重新加载一次，不能承诺所有平台热更新。
 
-> 更新 DCVlog
-
-自 V1.8.2 起不再依赖 `skills update dcvlog`。豆包工作里有些安装会被识别成 `local`，导致 update 找不到远程来源；现在统一从官方 GitHub 仓库重新覆盖安装最新版：
+**1.9.2及更早的旧学员：**先从官方来源完整安装一次新版，核对当前宿主实际加载的 `SKILL.md`、`VERSION` 和 `tools/update_skill.py`，重新加载后进入自动更新机制。首次获取仍可使用：
 
 ```bash
 npx -y skills add daichuan-ai/dcvlog -g --all
 ```
 
-这也是推荐的手动更新命令。完成后新开聊天或重新加载，再输入 `/dcvlog`。
-
-如果宿主不能执行命令，Skill 只会返回这条命令，不会假装更新成功，也不会自行生成一个假的本地 DCVlog。
+命令成功不代表写入了豆包或WorkBuddy实际加载目录；需要核对真实路径，不能把另一份全局副本当作完成迁移。旧入口不会仅因GitHub发布而自行改成新逻辑。
 
 ## 代川更新 GitHub 的正确文件
 
 本仓库保留两套兼容入口：根目录 `SKILL.md` 与 `skills/dcvlog/SKILL.md`；两处必须保持同版，**不要把四项的“Skill-only”安装包直接上传到 GitHub 根目录**，否则只会出现根目录重复的 `SKILL.md` / `references` / `telemetry-config.json`，未必更新实际安装来源。
 
-更新 GitHub 只用**完整项目更新包**：解压后进入解压目录，把**里面全部文件和文件夹（包含`skills`文件夹）**拖入 GitHub 仓库首页的 `Add file → Upload files`，覆盖提交。不要只传四项目录的Skill-only包，也不要拖一个最外层总文件夹进去。确认仓库根目录和 `skills/dcvlog/` 的 `VERSION` 均为 `1.9.2`，且两处 `SKILL.md` 的 `version` 都为 `1.9.2`，再让学员在豆包工作说“更新 DCVlog”，完全退出重开并输入 `/dcvlog`。**收稿后台须按 `docs/REVIEW_PILOT_SETUP.md` 完成公开模式和限频设置；先完成服务器再发布 Skill。**
+更新 GitHub 只用**完整项目更新包**：解压后进入解压目录，把**里面全部文件和文件夹（包含`skills`文件夹）**拖入 GitHub 仓库首页的 `Add file → Upload files`，覆盖提交。不要只传四项目录的Skill-only包，也不要拖一个最外层总文件夹进去。确认仓库根目录和 `skills/dcvlog/` 的 `VERSION` 均为 `1.9.3`，且两处 `SKILL.md` 的 `version` 都为 `1.9.3`，再让学员在豆包工作说“更新 DCVlog”，完全退出重开并输入 `/dcvlog`。**收稿后台须按 `docs/REVIEW_PILOT_SETUP.md` 完成公开模式和限频设置；先完成服务器再发布 Skill。**
 
 ## V1.8.7 自愿公测：完稿回收
 
@@ -170,7 +166,7 @@ dcvlog/
 
 - Skill name: `dcvlog`
 - Slash: `/dcvlog`
-- Skill Version: `1.9.2`
+- Skill Version: `1.9.3`
 - Corpus Version: `1.2.0`
 - Author: `daichuan-ai`
 
