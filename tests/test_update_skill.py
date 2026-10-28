@@ -6,6 +6,8 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import urllib.error
+import zipfile
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,7 +17,7 @@ SPEC.loader.exec_module(updater)
 A, B = "a" * 40, "b" * 40
 
 
-def package(version="1.9.3", extra=None):
+def package(version="1.9.4", extra=None):
     files = {name: b"reference or tool\n" for name in updater.REQUIRED}
     files["SKILL.md"] = ('---\nname: dcvlog\nversion: "' + version + '"\n---\n').encode()
     files["VERSION"] = (version + "\n").encode()
@@ -44,6 +46,15 @@ def write_files(root, files):
         path.write_bytes(content)
 
 
+def zip_archive(files, revision=A):
+    data = io.BytesIO()
+    with zipfile.ZipFile(data, "w", compression=zipfile.ZIP_DEFLATED) as output:
+        output.comment = revision.encode("ascii")
+        for name, content in files.items():
+            output.writestr("dcvlog-main/skills/dcvlog/" + name, content)
+    return data.getvalue()
+
+
 class AutoUpdateTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -63,7 +74,7 @@ class AutoUpdateTests(unittest.TestCase):
         self.assertEqual(result["status"], "updated")
         self.assertTrue(result["verified"])
         self.assertTrue(result["reread_required"])
-        self.assertEqual(updater.installed_version(self.target), "1.9.3")
+        self.assertEqual(updater.installed_version(self.target), "1.9.4")
         self.assertEqual(updater.installed_version(Path(result["backup_path"])), "1.8.3")
         self.assertEqual(calls, 1)
 
@@ -79,7 +90,7 @@ class AutoUpdateTests(unittest.TestCase):
         name = "references/corpus/batch-002-new/B002-004.md"
         result, _ = self.sync(package(extra={name: "新的创作范本。\n".encode()}), revision=B)
         self.assertEqual(result["status"], "updated")
-        self.assertEqual(result["latest_version"], "1.9.3")
+        self.assertEqual(result["latest_version"], "1.9.4")
         self.assertEqual((self.target / name).read_text(), "新的创作范本。\n")
         self.assertEqual(updater.load_state(self.target)["revision"], B)
 
@@ -103,7 +114,7 @@ class AutoUpdateTests(unittest.TestCase):
 
     def test_preserves_local_additions_and_external_consent(self):
         local = self.target / "references/corpus/batch-002-new/B002-999.md"
-        local.parent.mkdir(parents=True)
+        local.parent.mkdir(parents=True, exist_ok=True)
         local.write_text("本地新增，不可丢失。")
         consent = self.root / "home/.dcvlog/consent.json"
         consent.parent.mkdir(parents=True)
@@ -116,21 +127,113 @@ class AutoUpdateTests(unittest.TestCase):
 
     def test_network_failure_keeps_original_installation(self):
         original = (self.target / "SKILL.md").read_bytes()
-        with patch.object(updater, "remote_revision", side_effect=TimeoutError):
+        with patch.object(updater, "remote_revision", side_effect=TimeoutError), \
+                patch.object(updater, "get_bytes", side_effect=TimeoutError):
             result = updater.ensure_latest(self.target)
         self.assertEqual(result["status"], "unavailable")
         self.assertFalse(result["verified"])
         self.assertEqual((self.target / "SKILL.md").read_bytes(), original)
         self.assertFalse((self.root / ".installed.dcvlog-update.lock").exists())
 
-    def test_read_only_check_never_downloads_or_writes(self):
+    def test_read_only_check_verifies_release_without_changing_installation(self):
         before = {p.relative_to(self.root): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
         result, calls = self.sync(check_only=True)
         self.assertEqual(result["status"], "update_available")
         self.assertFalse(result["verified"])
-        self.assertEqual(calls, 0)
+        self.assertEqual(calls, 1)
+        self.assertEqual(result["latest_version"], package()["VERSION"].decode().strip())
         after = {p.relative_to(self.root): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
         self.assertEqual(before, after)
+
+    def test_legacy_doubao_header_uses_VERSION_and_can_upgrade(self):
+        old = b'---\nname: dcvlog\ndescription: "legacy Doubao package"\n---\n# V1.9.0\n'
+        write_files(self.target, package("1.9.0", {"SKILL.md": old}))
+        self.assertEqual(updater.installed_version(self.target), "1.9.0")
+        result, _ = self.sync()
+        self.assertEqual(result["status"], "updated")
+        self.assertEqual((Path(result["backup_path"]) / "SKILL.md").read_bytes(), old)
+
+    def test_conflicting_installed_versions_are_rejected(self):
+        (self.target / "VERSION").write_text("9.9.9\n")
+        result, calls = self.sync()
+        self.assertEqual(result["status"], "invalid_target")
+        self.assertEqual(calls, 0)
+
+    def test_VERSION_fallback_still_requires_dcvlog_identity(self):
+        (self.target / "SKILL.md").write_text('---\nname: another-skill\n---\n')
+        result, calls = self.sync()
+        self.assertEqual(result["status"], "invalid_target")
+        self.assertEqual(calls, 0)
+
+    def test_legacy_fallback_does_not_accept_invalid_release_metadata(self):
+        files = package(extra={"SKILL.md": b'---\nname: dcvlog\n---\n'})
+        result, _ = self.sync(files)
+        self.assertEqual(result["status"], "invalid_release")
+
+    def test_same_files_without_state_are_not_falsely_reported_as_new(self):
+        write_files(self.target, package())
+        result, calls = self.sync(check_only=True)
+        self.assertEqual(result["status"], "up_to_date")
+        self.assertTrue(result["verified"])
+        self.assertEqual(calls, 1)
+        self.assertFalse((self.target / updater.STATE_FILE).exists())
+
+    def test_official_main_zip_works_when_github_and_api_are_unavailable(self):
+        raw = zip_archive(package(extra={"references/中文说明.md": "中文文件名。\n".encode()}))
+        requested = []
+        def transport(url, limit, timeout):
+            requested.append(url)
+            if url.startswith(updater.MAIN_ARCHIVE + "?check="):
+                return raw
+            raise urllib.error.URLError("metadata endpoint unavailable")
+        with patch.object(updater, "get_bytes", side_effect=transport):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "updated")
+        self.assertTrue(result["verified"])
+        self.assertEqual(result["revision"], A)
+        self.assertEqual((self.target / "references/中文说明.md").read_text(), "中文文件名。\n")
+        self.assertEqual(len(requested), 3)
+        self.assertTrue(requested[-1].startswith(updater.MAIN_ARCHIVE))
+
+    def test_official_zip_missing_commit_identity_is_rejected(self):
+        raw = zip_archive(package(), revision="not-a-commit")
+        with patch.object(updater, "remote_revision", side_effect=TimeoutError), \
+                patch.object(updater, "get_bytes", return_value=raw):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "invalid_release")
+        self.assertEqual(updater.installed_version(self.target), "1.8.3")
+
+    def test_tar_transport_failure_uses_zip_pinned_to_same_commit(self):
+        raw = zip_archive(package())
+        with patch.object(updater, "get_bytes", side_effect=[TimeoutError(), raw]) as transport:
+            self.assertEqual(updater.download_archive(A), raw)
+        self.assertEqual([c.args[0] for c in transport.call_args_list],
+                         [updater.ARCHIVE + A, updater.ZIP_ARCHIVE + A])
+
+    def test_pinned_zip_cannot_return_another_commit(self):
+        with patch.object(updater, "get_bytes", side_effect=[TimeoutError(), zip_archive(package(), B)]):
+            with self.assertRaises(updater.UpdateError):
+                updater.download_archive(A)
+
+    def test_zip_path_traversal_is_rejected(self):
+        raw = zip_archive(package(extra={"../../outside": b"bad"}))
+        with patch.object(updater, "remote_revision", return_value=A), \
+                patch.object(updater, "download_archive", return_value=raw):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "invalid_release")
+        self.assertFalse((self.root / "outside").exists())
+
+    def test_zip_symbolic_link_is_rejected(self):
+        raw = io.BytesIO(zip_archive(package()))
+        with zipfile.ZipFile(raw, "a") as archive:
+            item = zipfile.ZipInfo("dcvlog-main/skills/dcvlog/references/escape")
+            item.create_system = 3
+            item.external_attr = 0o120777 << 16
+            archive.writestr(item, "/outside")
+        with patch.object(updater, "remote_revision", return_value=A), \
+                patch.object(updater, "download_archive", return_value=raw.getvalue()):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "invalid_release")
 
     def test_permission_failure_is_not_success(self):
         with patch.object(updater.os, "open", side_effect=PermissionError):
@@ -149,6 +252,13 @@ class AutoUpdateTests(unittest.TestCase):
     def test_incomplete_package_is_rejected(self):
         files = package()
         del files["tools/review_upload.py"]
+        result, _ = self.sync(files)
+        self.assertEqual(result["status"], "invalid_release")
+        self.assertEqual(updater.installed_version(self.target), "1.8.3")
+
+    def test_package_without_approved_case_library_is_not_installed(self):
+        files = package()
+        del files["references/corpus/batch-002-new/B002-001.md"]
         result, _ = self.sync(files)
         self.assertEqual(result["status"], "invalid_release")
         self.assertEqual(updater.installed_version(self.target), "1.8.3")
@@ -200,7 +310,7 @@ class AutoUpdateTests(unittest.TestCase):
     def test_readback_failure_restores_old_and_retains_failed_copy(self):
         original_match = updater.files_match
         def fail_new_target(root, hashes):
-            if root == self.target and updater.installed_version(root) == "1.9.3":
+            if root == self.target and updater.installed_version(root) == "1.9.4":
                 return False
             return original_match(root, hashes)
         with patch.object(updater, "files_match", side_effect=fail_new_target):

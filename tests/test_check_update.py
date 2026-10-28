@@ -2,6 +2,7 @@
 import importlib.util
 import io
 import unittest
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -14,6 +15,26 @@ spec.loader.exec_module(check_update)
 class VersionCheckTests(unittest.TestCase):
     def test_installed_version_parses_skill(self):
         self.assertEqual(check_update.installed_version(), (SCRIPT.parents[1] / "VERSION").read_text().strip())
+
+    def test_real_legacy_header_reads_VERSION_instead_of_failing_before_network(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "SKILL.md").write_text('---\nname: dcvlog\ndescription: legacy\n---\n# V1.9.0\n')
+            (root / "VERSION").write_text("1.9.0\n")
+            self.assertEqual(check_update.installed_version(root), "1.9.0")
+            with patch.object(check_update, "__file__", str(root / "tools/check_update.py")), \
+                    patch.object(check_update, "remote_version", return_value="1.9.4") as network:
+                result = check_update.check()
+            self.assertEqual(result["status"], "update_available")
+            self.assertTrue(network.called)
+
+    def test_legacy_fallback_requires_the_correct_skill(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "SKILL.md").write_text('---\nname: other\n---\n')
+            (root / "VERSION").write_text("1.9.0\n")
+            with self.assertRaises(ValueError):
+                check_update.installed_version(root)
 
     def test_detects_new_version(self):
         self.assertEqual(check_update.compare_versions("1.8.6", "1.8.7")["status"], "update_available")
