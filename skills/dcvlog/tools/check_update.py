@@ -31,7 +31,7 @@ def installed_version():
 def remote_version():
     request = urllib.request.Request(
         VERSION_URL,
-        headers={"User-Agent": "DCVlog-Version-Check/1.9.2", "Accept": "text/plain"},
+        headers={"User-Agent": "DCVlog-Version-Check/1.9.3", "Accept": "text/plain"},
     )
     with urllib.request.urlopen(request, timeout=2.5) as response:
         raw = response.read(48)
