@@ -3,8 +3,8 @@
 1. 用手机端真实学员走3人和4人流程：第1位成片展示必须同时有照片+视频，旁白至少1句具体作品解读；第2位只讲新点；第3/4位不被强迫重复完整面诊。
 2. 学员只答“很好看/满意/不知道”：AI先给基于真实服装、妆容和人物特点的2—3种审美候选；一旦选中写出可播的生动作品段，禁止虚构第三方评价与五官变化。
 3. 没有结果观察且AI看不到照片时，只可写“我想要的感觉……”这种设计意图，不能写“最后果然……”。两次仍卡壳时按克制试稿许可分支走，不能把用户困住。
-4. 在已安装版本低于GitHub远端版本时输入 `/dcvlog`，须在双入口前问“更新/继续使用”；一致或无网时不插入版本提示。远端对比需要宿主能够运行脚本或读网页，不能保证所有端都可用。
-5. 离线可执行 `python3 -m unittest discover -s tests -p 'test_check_update.py' -v` 检查版本比较和断网分支；完整运行 `python3 tools/validate_skill.py` 校验原文与跨文件配置。
+4. 输入 `/dcvlog` 自动同步实际加载目录，不再询问更新。相同提交且文件一致时不重复下载；同版本新增案例也同步。失败说明未更新，不能称最新版。宿主需有联网、执行、写入与重读能力。
+5. 自动更新离线回归：`python3 -m unittest discover -s tests -p test_update_skill.py -v`；课堂收稿回归：`python3 -m unittest discover -s tests -p test_review_upload.py -v`。旧版本诊断仍可执行 `python3 -m unittest discover -s tests -p 'test_check_update.py' -v` 检查版本比较和断网分支；完整运行 `python3 tools/validate_skill.py` 校验原文与跨文件配置。
 
 **本地规则/离线脚本通过，不能冒充豆包工作手机端实机通过。**
 

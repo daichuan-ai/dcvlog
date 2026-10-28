@@ -10,6 +10,6 @@ class TestE06(unittest.TestCase):
   for key in ['强画面','强情绪','强数字','纯文案','只发第1位','只发第2位','人物印象','自然结束','不再追问','完整连续旁白']:
    self.assertIn(key,s)
  def test_version(self):
-  self.assertEqual((R/'VERSION').read_text().strip(),'1.9.2')
-  self.assertIn('version: "1.9.2"',(R/'SKILL.md').read_text())
+  self.assertEqual((R/'VERSION').read_text().strip(),'1.9.3')
+  self.assertIn('version: "1.9.3"',(R/'SKILL.md').read_text())
 if __name__=="__main__": unittest.main()

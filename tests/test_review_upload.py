@@ -42,6 +42,9 @@ class ReviewUploadTest(unittest.TestCase):
         self.consent_path.start()
         self.addCleanup(self.state.stop)
         self.addCleanup(self.consent_path.stop)
+        self.anonymous = patch.object(uploader, "_anonymous_id", return_value=str(uuid.uuid4()))
+        self.anonymous.start()
+        self.addCleanup(self.anonymous.stop)
 
     def test_default_disabled_and_no_upload(self):
         self.assertEqual(uploader.read_consent({"enabled": False}), "disabled")

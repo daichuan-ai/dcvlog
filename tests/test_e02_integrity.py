@@ -1,7 +1,7 @@
 from pathlib import Path
 import hashlib
 r=Path(__file__).resolve().parents[1]; a=r/'skills/dcvlog'
-required=['SKILL.md','references/opening-ending.md','references/collage-engine.md','references/creative-engine-e02.md','references/delivery-checklist-e02.md','tools/case_catalog.py','tools/telemetry.py','tools/review_upload.py','tools/check_update.py','references/corpus/catalog.json']
+required=['SKILL.md','references/opening-ending.md','references/collage-engine.md','references/creative-engine-e02.md','references/delivery-checklist-e02.md','tools/case_catalog.py','tools/telemetry.py','tools/review_upload.py','tools/check_update.py','tools/update_skill.py','references/corpus/catalog.json']
 for name in required:
  assert (r/name).is_file() and (a/name).is_file(),name
  assert (r/name).read_bytes()==(a/name).read_bytes(),name
