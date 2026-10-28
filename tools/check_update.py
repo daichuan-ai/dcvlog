@@ -16,22 +16,33 @@ def parse_version(value):
     return tuple(int(part) for part in value.split("."))
 
 
-def installed_version():
-    skill = Path(__file__).resolve().parents[1] / "SKILL.md"
+def installed_version(root=None):
+    root = Path(root) if root is not None else Path(__file__).resolve().parents[1]
+    skill = root / "SKILL.md"
     body = skill.read_text(encoding="utf-8")
     if not body.startswith("---\n"):
         raise ValueError("invalid frontmatter")
     frontmatter = body.split("---", 2)[1]
+    if not re.search(r'^name:\s*["\']?dcvlog["\']?\s*$', frontmatter, re.M):
+        raise ValueError("invalid skill identity")
     match = FRONTMATTER_VERSION.search(frontmatter)
-    if not match:
-        raise ValueError("missing version")
-    return match.group(1)
+    version_file = root / "VERSION"
+    file_version = version_file.read_text(encoding="utf-8").strip() if version_file.is_file() else None
+    if file_version is not None:
+        parse_version(file_version)
+    if match and file_version and match.group("version") != file_version:
+        raise ValueError("installed versions disagree")
+    if match:
+        return match.group("version")
+    if file_version:
+        return file_version
+    raise ValueError("missing version")
 
 
 def remote_version():
     request = urllib.request.Request(
         VERSION_URL,
-        headers={"User-Agent": "DCVlog-Version-Check/1.9.3", "Accept": "text/plain"},
+        headers={"User-Agent": "DCVlog-Version-Check/1.9.4", "Accept": "text/plain"},
     )
     with urllib.request.urlopen(request, timeout=2.5) as response:
         raw = response.read(48)

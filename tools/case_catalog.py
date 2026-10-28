@@ -5,6 +5,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / 'references' / 'corpus'
 NEW = ROOT / 'batch-002-new'
+EXAMPLE_FILES = {
+    'opening': 'batch-002-new/B002-001.md',
+    'before': 'batch-002-new/B002-002.md',
+    'after': 'batch-002-new/B002-003.md',
+}
 
 def digest(data): return hashlib.sha256(data).hexdigest()
 
@@ -36,6 +41,19 @@ def build(root=ROOT):
     tmp.replace(dest)
     return rows
 
+def examples(parts=('before', 'after'), root=ROOT):
+    """Read approved creative examples, not just catalog paths or source excerpts."""
+    bodies=[]
+    for part in dict.fromkeys(parts):
+        if part not in EXAMPLE_FILES:
+            raise ValueError('unknown example part: ' + part)
+        path=root/EXAMPLE_FILES[part]
+        body=path.read_text(encoding='utf-8')
+        if not body.strip():
+            raise ValueError('empty example file: ' + str(path))
+        bodies.append(body.rstrip())
+    return '\n\n'.join(bodies) + '\n'
+
 def add(source,root=ROOT,client_count=None,tags=''):
     raw=Path(source).read_bytes()
     if not raw.strip(): raise ValueError('empty case')
@@ -56,8 +74,13 @@ def add(source,root=ROOT,client_count=None,tags=''):
 def main():
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='cmd',required=True)
     sub.add_parser('list');sub.add_parser('build');a=sub.add_parser('add');a.add_argument('file');a.add_argument('--client-count',type=int);a.add_argument('--tags',default='')
+    e=sub.add_parser('examples',help='Read approved opening/before/after example text')
+    e.add_argument('--part',action='append',choices=tuple(EXAMPLE_FILES),help='Repeat for multiple parts; defaults to before and after')
     args=parser.parse_args()
     if args.cmd=='add': print(add(args.file,client_count=args.client_count,tags=args.tags))
+    elif args.cmd=='examples':
+        try: print(examples(args.part or ('before','after')),end='')
+        except (OSError,ValueError) as error: parser.exit(1,str(error)+'\n')
     else:
         rows=build() if args.cmd=='build' else scan()
         print(json.dumps(rows,ensure_ascii=False,indent=2))

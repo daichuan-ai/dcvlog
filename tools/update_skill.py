@@ -7,6 +7,7 @@ import argparse
 import contextlib
 import datetime
 import hashlib
+import http.client
 import io
 import json
 import os
@@ -21,11 +22,14 @@ import urllib.request
 from urllib.parse import urlparse
 import uuid
 import xml.etree.ElementTree as ElementTree
+import zipfile
 
 REPOSITORY = "daichuan-ai/dcvlog"
 API = "https://api.github.com/repos/" + REPOSITORY
 FEED = "https://github.com/" + REPOSITORY + "/commits/main.atom"
 ARCHIVE = "https://codeload.github.com/" + REPOSITORY + "/tar.gz/"
+ZIP_ARCHIVE = "https://codeload.github.com/" + REPOSITORY + "/zip/"
+MAIN_ARCHIVE = ZIP_ARCHIVE + "refs/heads/main"
 STATE_FILE = ".dcvlog-update-state.json"
 SHA = re.compile(r"^[0-9a-f]{40}$")
 HASH = re.compile(r"^[0-9a-f]{64}$")
@@ -33,13 +37,18 @@ VERSION = re.compile(r'^version:\s*"?(\d+\.\d+\.\d+)"?\s*$', re.M)
 RAW_CASE = "references/corpus/batch-003-raw-20261016/cases.md"
 RAW_SHA256 = "4e0edfafe1adfa894213b7cbbe7778a46d67e5525e79fc8afaa3386336dbf067"
 REQUIRED = (
-    "SKILL.md", "VERSION", "tools/update_skill.py", "tools/telemetry.py",
+    "SKILL.md", "VERSION", "tools/update_skill.py", "tools/case_catalog.py", "tools/telemetry.py",
     "tools/review_upload.py", "references/version-check.md",
     "references/creative-engine-e02.md", "references/corpus/corpus-index.md",
+    "references/corpus/catalog.json",
+    "references/corpus/batch-002-new/B002-001.md",
+    "references/corpus/batch-002-new/B002-002.md",
+    "references/corpus/batch-002-new/B002-003.md",
     RAW_CASE,
 )
 MAX_ARCHIVE = 16 * 1024 * 1024
 MAX_UNPACKED = 64 * 1024 * 1024
+NETWORK_ERRORS = (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException)
 
 
 class UpdateError(Exception):
@@ -77,9 +86,21 @@ def installed_version(root):
     parts = body.split("---", 2)
     match = VERSION.search(parts[1]) if body.startswith("---\n") and len(parts) == 3 else None
     identity = re.search(r'^name:\s*["\']?dcvlog["\']?\s*$', parts[1], re.M) if len(parts) == 3 else None
-    if not match or not identity:
+    if not identity:
         raise UpdateError("invalid_target", "Cannot read the loaded Skill version")
-    return match.group(1)
+    version_file = safe_path(root, "VERSION")
+    file_version = version_file.read_text(encoding="utf-8").strip() if version_file.is_file() else None
+    if file_version is not None and not re.fullmatch(r"\d+\.\d+\.\d+", file_version):
+        raise UpdateError("invalid_target", "Invalid VERSION file")
+    if match and file_version and match.group(1) != file_version:
+        raise UpdateError("invalid_target", "Installed versions disagree")
+    if match:
+        return match.group(1)
+    # Real Doubao 1.9.0 packages have name/description frontmatter but only
+    # store their version in VERSION. Do not mistake this for a bad target.
+    if file_version:
+        return file_version
+    raise UpdateError("invalid_target", "Cannot read the loaded Skill version")
 
 
 def get_bytes(url, limit, timeout):
@@ -122,7 +143,7 @@ def remote_revision():
                 if any(link.get("href") == expected and link.get("rel") == "alternate"
                        for link in entry.findall("a:link", namespace)):
                     return revision
-    except (urllib.error.URLError, TimeoutError, ConnectionError, ElementTree.ParseError, UpdateError):
+    except NETWORK_ERRORS + (ElementTree.ParseError, UpdateError):
         pass
     data = json.loads(get_bytes(API + "/git/ref/heads/main?check=" + str(time.time_ns()), 65536, 3))
     if not isinstance(data, dict) or not isinstance(data.get("object"), dict):
@@ -136,38 +157,85 @@ def remote_revision():
 def download_archive(revision):
     if not SHA.fullmatch(revision):
         raise UpdateError("invalid_release", "Invalid commit revision")
-    return get_bytes(ARCHIVE + revision, MAX_ARCHIVE, 8)
+    try:
+        return get_bytes(ARCHIVE + revision, MAX_ARCHIVE, 8)
+    except NETWORK_ERRORS:
+        raw = get_bytes(ZIP_ARCHIVE + revision, MAX_ARCHIVE, 12)
+        if archive_revision(raw) != revision:
+            raise UpdateError("invalid_release", "Archive commit does not match the requested commit")
+        return raw
+
+
+def archive_revision(raw):
+    """GitHub's official Git ZIP carries the full commit SHA in its comment."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            revision = archive.comment.decode("ascii").strip()
+    except (zipfile.BadZipFile, UnicodeError) as error:
+        raise UpdateError("invalid_release", "Invalid official ZIP archive") from error
+    if not SHA.fullmatch(revision):
+        raise UpdateError("invalid_release", "Official ZIP is missing its commit identity")
+    return revision
+
+
+def latest_release():
+    try:
+        return remote_revision(), None
+    except UpdateError as error:
+        if error.status != "unavailable":
+            raise
+    except NETWORK_ERRORS + (json.JSONDecodeError,):
+        pass
+    # github.com/API can be unavailable while codeload still works. Resolve
+    # the commit from the official main ZIP itself, not a third-party mirror.
+    raw = get_bytes(MAIN_ARCHIVE + "?check=" + str(time.time_ns()), MAX_ARCHIVE, 12)
+    return archive_revision(raw), raw
 
 
 def unpack_package(raw, destination):
     """Extract only the standard Skill, never repository-root compatibility files."""
-    total, seen, archive_roots = 0, set(), set()
+    if zipfile.is_zipfile(io.BytesIO(raw)):
+        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+            if len(archive.infolist()) > 5000:
+                raise UpdateError("invalid_release", "Archive contains too many entries")
+            entries = ((item.filename, item.is_dir(),
+                        not item.is_dir() and ((item.external_attr >> 16) & 0o170000) in (0, 0o100000),
+                        item.file_size, lambda item=item: archive.open(item))
+                       for item in archive.infolist())
+            return unpack_entries(entries, destination)
     with tarfile.open(fileobj=io.BytesIO(raw), mode="r:gz") as archive:
-        for member in archive:
-            path = relative_path(member.name)
-            parts = path.parts
-            if len(parts) < 3 or parts[1:3] != ("skills", "dcvlog"):
-                continue
-            archive_roots.add(parts[0])
-            if len(archive_roots) != 1:
-                raise UpdateError("invalid_release", "Multiple package roots")
-            if member.isdir():
-                continue
-            if not member.isfile() or member.size > 8 * 1024 * 1024:
-                raise UpdateError("invalid_release", "Unsupported archive entry")
-            relative = PurePosixPath(*parts[3:]).as_posix()
-            if "__pycache__" in parts or relative.endswith((".pyc", ".pyo")):
-                continue
-            if relative == STATE_FILE or relative in seen:
-                raise UpdateError("invalid_release", "Duplicate or reserved package path")
-            seen.add(relative)
-            total += member.size
-            if total > MAX_UNPACKED or len(seen) > 1000:
-                raise UpdateError("invalid_release", "Package exceeds size limit")
-            target = safe_path(destination, relative)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            with archive.extractfile(member) as stream, target.open("wb") as output:
-                shutil.copyfileobj(stream, output)
+        entries = ((item.name, item.isdir(), item.isfile(), item.size,
+                    lambda item=item: archive.extractfile(item)) for item in archive)
+        return unpack_entries(entries, destination)
+
+
+def unpack_entries(entries, destination):
+    total, seen, archive_roots = 0, set(), set()
+    for name, is_dir, is_file, size, open_stream in entries:
+        path = relative_path(name)
+        parts = path.parts
+        if len(parts) < 3 or parts[1:3] != ("skills", "dcvlog"):
+            continue
+        archive_roots.add(parts[0])
+        if len(archive_roots) != 1:
+            raise UpdateError("invalid_release", "Multiple package roots")
+        if is_dir:
+            continue
+        if not is_file or size > 8 * 1024 * 1024:
+            raise UpdateError("invalid_release", "Unsupported archive entry")
+        relative = PurePosixPath(*parts[3:]).as_posix()
+        if "__pycache__" in parts or relative.endswith((".pyc", ".pyo")):
+            continue
+        if relative == STATE_FILE or relative in seen:
+            raise UpdateError("invalid_release", "Duplicate or reserved package path")
+        seen.add(relative)
+        total += size
+        if total > MAX_UNPACKED or len(seen) > 1000:
+            raise UpdateError("invalid_release", "Package exceeds size limit")
+        target = safe_path(destination, relative)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with open_stream() as stream, target.open("wb") as output:
+            shutil.copyfileobj(stream, output)
     if not seen:
         raise UpdateError("invalid_release", "Standard DCVlog package is missing")
     return {name: file_hash(safe_path(destination, name)) for name in sorted(seen)}
@@ -177,7 +245,15 @@ def validate_package(root, hashes):
     for name in REQUIRED:
         if name not in hashes or not safe_path(root, name).is_file():
             raise UpdateError("invalid_release", "Incomplete package: " + name)
-    version = installed_version(root)
+    try:
+        version = installed_version(root)
+    except UpdateError as error:
+        raise UpdateError("invalid_release", "Invalid release identity or version") from error
+    # Compatibility fallback is only for installed legacy targets; official
+    # release candidates must still carry matching frontmatter and VERSION.
+    body = safe_path(root, "SKILL.md").read_text(encoding="utf-8")
+    if not VERSION.search(body.split("---", 2)[1]):
+        raise UpdateError("invalid_release", "Release is missing its frontmatter version")
     if safe_path(root, "VERSION").read_text(encoding="utf-8").strip() != version:
         raise UpdateError("invalid_release", "Package versions disagree")
     if hashes[RAW_CASE] != RAW_SHA256:
@@ -293,19 +369,21 @@ def install_package(target, candidate, revision, version, hashes, previous):
 
 def _sync(target, check_only):
     version = installed_version(target)
-    revision = remote_revision()
+    revision, cached_archive = latest_release()
     state = load_state(target)
     common = {"skill_dir": str(target), "installed_version": version, "revision": revision}
     if state and state["revision"] == revision and files_match(target, state["files"]):
         return dict(common, status="up_to_date", verified=True, latest_version=version)
-    if check_only:
-        return dict(common, status="update_available", verified=False)
     with tempfile.TemporaryDirectory(prefix=".dcvlog-download-", dir=target.parent) as directory:
         candidate = Path(directory)
-        hashes = unpack_package(download_archive(revision), candidate)
+        hashes = unpack_package(cached_archive if cached_archive is not None else download_archive(revision), candidate)
         latest = validate_package(candidate, hashes)
         obsolete = set((state or {}).get("files", {})) - set(hashes)
-        if files_match(target, hashes) and not any(safe_path(target, name).exists() for name in obsolete):
+        matches = files_match(target, hashes) and not any(safe_path(target, name).exists() for name in obsolete)
+        if check_only:
+            return dict(common, status="up_to_date" if matches else "update_available",
+                        verified=matches, latest_version=latest)
+        if matches:
             save_state(target, revision, latest, hashes)
             return dict(common, status="up_to_date", verified=True, latest_version=latest)
         backup = install_package(target, candidate, revision, latest, hashes, state)
@@ -329,9 +407,9 @@ def ensure_latest(skill_dir=None, check_only=False):
         return dict(status=error.status, reason=str(error), verified=False, **error.details)
     except PermissionError:
         return {"status": "permission_denied", "verified": False, "reason": "Loaded directory is not writable"}
-    except (urllib.error.URLError, TimeoutError, ConnectionError, json.JSONDecodeError):
+    except NETWORK_ERRORS + (json.JSONDecodeError,):
         return {"status": "unavailable", "verified": False, "reason": "Cannot verify or download the official release"}
-    except (OSError, ValueError, EOFError, tarfile.TarError):
+    except (OSError, ValueError, EOFError, tarfile.TarError, zipfile.BadZipFile):
         return {"status": "failed", "verified": False, "reason": "Update could not complete; inspect the installation and backups"}
 
 
