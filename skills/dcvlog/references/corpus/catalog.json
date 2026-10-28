@@ -22,6 +22,62 @@
       "opening_type": null,
       "ending_type": null,
       "style_tags": []
+    },
+    {
+      "id": "B002-001",
+      "source_path": "batch-002-new/B002-001.md",
+      "status": "new",
+      "raw_hash": "f7373ae588b1d4168a96d6aee2c7a9693e9ea0cfc7d8212fa09a986e629e392f",
+      "client_count": null,
+      "video_structure": "standard_makeup_vlog",
+      "opening_type": null,
+      "ending_type": null,
+      "style_tags": [
+        "创作范本",
+        "片段合集",
+        "开头",
+        "强画面",
+        "身份型"
+      ]
+    },
+    {
+      "id": "B002-002",
+      "source_path": "batch-002-new/B002-002.md",
+      "status": "new",
+      "raw_hash": "7f935a06dcc86e5f497c4365436395a933f01dfd2f735f86a46119bb5cafcee6",
+      "client_count": null,
+      "video_structure": "standard_makeup_vlog",
+      "opening_type": null,
+      "ending_type": null,
+      "style_tags": [
+        "创作范本",
+        "片段合集",
+        "妆前",
+        "用途",
+        "需求",
+        "人物特点",
+        "整体适配"
+      ]
+    },
+    {
+      "id": "B002-003",
+      "source_path": "batch-002-new/B002-003.md",
+      "status": "new",
+      "raw_hash": "73bb00b1cc706bf5b7418f75307b0ee4ba61c0b1d789c99be6ed06622c584040",
+      "client_count": null,
+      "video_structure": "standard_makeup_vlog",
+      "opening_type": null,
+      "ending_type": null,
+      "style_tags": [
+        "创作范本",
+        "片段合集",
+        "妆后",
+        "人物联想",
+        "气质",
+        "变化分寸",
+        "情绪",
+        "反馈"
+      ]
     }
   ]
 }
