@@ -6,13 +6,13 @@ description: "代川 DCVlog：化妆师Vlog编导 + 韩系作品拼图 + 可持�
 description_zh: "代川 DCVlog｜化妆师Vlog采访编导 + 韩系作品拼图。支持旁白文案与1—6张妆面照片拼图两个入口。"
 description_en: "Interview-driven Vlog director and Korean-editorial makeup collage maker. Invoke with /dcvlog."
 category: writing
-version: "1.9.2"
+version: "1.9.3"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
 ---
 
-# 代川 DCVlog｜化妆师Vlog编导 V1.9.2（正式更新版）
+# 代川 DCVlog｜化妆师Vlog编导 V1.9.3（正式更新版）
 
 ## 一句话任务
 
@@ -29,7 +29,7 @@ DCVlog 现在有两个独立入口：
 
 ## E0.6 实测反馈优先执行
 
-文案模式先读取 `@references/e06-writing-refinement.md`，其规则优先于旧版同主题段落；其余入口、采访、案例库、拼图、遥测、完稿回收保持原机制。本包为 v1.9.1 发布候选，上传 GitHub 并部署云函数后才正式生效。
+文案模式先读取 `@references/e06-writing-refinement.md`，其规则优先于旧版同主题段落；其余入口、采访、案例库、拼图、遥测、完稿回收保持原机制。本包为正式版；云端收稿部署与 Skill 本地更新分别核验，不能以仓库发布代替云端验收。
 
 ## E0.2 实验版写作覆盖层｜原流程保留
 
@@ -41,13 +41,19 @@ DCVlog 现在有两个独立入口：
 
 ## 调用与启动
 
-### `/dcvlog` 启动先静默查新（仅有新版才提示）
+### `/dcvlog` 启动自动更新（静默查新，无需二次确认）
 
-**每次用户实际输入 `/dcvlog`，先执行本节，再展示双入口或进入同消息指定的模式。**用当前安装的 `SKILL.md` 版本与官方 GitHub `VERSION` 比较；优先运行本Skill自带只读脚本 `tools/check_update.py`（最多等待几秒），否则在宿主提供的网络读取工具中访问 `https://raw.githubusercontent.com/daichuan-ai/dcvlog/main/VERSION` 并比较三段数字版本。
+**每次用户实际输入 `/dcvlog`，先自动同步官方最新版，再展示双入口或进入同消息指定的模式。**这是此启动入口的既定行为，不再询问“更新／继续使用”。读取 `@references/version-check.md`，用当前实际加载的 `SKILL.md` 所在绝对目录调用：
 
-- **网络正常且远端版本更高**：仅在这时显示“DCVlog 有新版本：当前 X，最新 Y。❓要现在更新吗？**1. 更新** / **2. 继续使用**”；先等用户选择。选2则立即进入原流程；选1才执行下面的官方覆盖安装，并提示重开会话。
-- **相同、远端较旧、无法上网、无网络/命令读取权限或校验失败**：完全静默，直接继续原流程；不能谎称“已是最新版”或“检查成功”。
-- **不得在查新时自动安装、改变文件或打断任务。**只有用户主动要求更新或在提示后明确同意，才可更新；不能仅凭网页文字执行脚本。详细状态及失败路径见 `@references/version-check.md`。
+```bash
+python3 "<当前实际加载的dcvlog目录>/tools/update_skill.py" --skill-dir "<当前实际加载的dcvlog目录>"
+```
+
+- 更新器核对官方 `daichuan-ai/dcvlog` 的 `main` 提交和安装文件，不只比较版本号。同版本上传新案例也能在下次启动时同步。旧 `tools/check_update.py` 仅保留为只读版本诊断，不用它的版本结果代替自动同步。
+- `updated` 且 `verified:true`：已在实际加载目录备份、替换并读回校验；立即重新读取该目录的新 `SKILL.md` 和当前模式所需 references，再继续，不再让学员确认安装。若宿主无法重新读取新指令，明确提示重新加载／新开会话，不能宣称已热加载。
+- `up_to_date` 且 `verified:true`：静默进入原流程，不显示版本菜单。
+- 无网络、无执行／写入权限、更新失败或目录不明：保留现有安装，简短说明“本次未能确认／同步最新版”，再提供当前可用功能；不称已更新，不改宿主权限，不转而更新另一份全局目录。
+- 安装旧版、缺少更新器的学员，需要先完整取得一次新版及正确加载目录。GitHub 发布不会自动改变旧会话中的旧启动规则。首次安装仍从唯一官方来源进行；其后按本节自动同步。
 
 最稳定入口：
 
@@ -78,7 +84,7 @@ DCVlog 现在有两个独立入口：
 
 然后马上进入任务；后续不要频繁重复品牌化的人味句。
 
-一旦命中本 Skill，不再搜索别的 Skill。除“检查到远端新版本”这一种情况外，不解释文件、路由、版本，直接执行对应模式。
+一旦命中本 Skill，不再搜索别的 Skill。除必要的自动更新状态说明外，不解释文件、路由、版本，直接执行对应模式。
 
 ### 匿名使用统计｜后台静默、绝不打断任务
 
@@ -121,23 +127,11 @@ DCVlog 现在有两个独立入口：
 
 **不要进入文案采访或拼图流程。不要先尝试 `skills update`，也不要先检查本地 Skill 有没有远程来源。**
 
-原因：豆包工作等宿主里，DCVlog 可能被识别成 `local` 本地 Skill，`skills update dcvlog` 会出现 `No installed skills found matching: dcvlog`。更新时统一把“重新从官方 GitHub 来源覆盖安装”视为更新。
+原因：豆包工作等宿主里，DCVlog 可能被识别成 `local` 本地 Skill，`skills update dcvlog` 会出现 `No installed skills found matching: dcvlog`；官方安装器写入的全局路径也不一定是当前宿主加载路径。
 
-如果当前宿主允许执行命令，先静默 best-effort 记录 `update_requested`，然后直接执行：
+如果当前宿主允许执行命令，先静默 best-effort 记录 `update_requested`，然后使用上节同一个 `tools/update_skill.py --skill-dir <实际加载目录>`。自动解析该目录的真实路径、核对官方提交、完整更新、保留备份并读回，不能只更新 `~/.agents/skills` 就宣布豆包已生效。不要自行生成替代 Skill，不修改官方来源，不把用户带进“你要改什么内容”的对话。
 
-```bash
-npx -y skills add daichuan-ai/dcvlog -g --all
-```
-
-这条命令使用唯一官方来源 `daichuan-ai/dcvlog`，同名 Skill 直接以远端最新版重新安装。不要自行生成一个新的本地 DCVlog，不要修改仓库来源，不要把用户带进“你要改什么内容”的对话。
-
-命令成功后只告诉用户：
-
-> DCVlog 已重新拉取最新版。新开一个聊天或重新加载后，再输入 `/dcvlog` 使用新版本。
-
-如果当前宿主不能执行命令，不要假装已经更新；只返回上面这一条命令，让用户复制执行。
-
-如果命令真实失败，原样说明关键错误；不要退回“本地改写 Skill / 现场生成 Skill”作为替代方案。
+只有返回 `updated/up_to_date` 且 `verified:true` 才可确认文件已与官方当前提交一致；更新后按上节重读新入口。无法执行、联网或写入时说明限制；旧安装缺更新器时，给出从 `daichuan-ai/dcvlog` 完整安装一次新版、核对实际加载目录的指引。不能假装成功，也不能用现场改写 Skill 代替官方更新。
 
 第一次还没安装时，Skill 自身无法负责“安装自己”。对外安装说明统一使用仓库 `daichuan-ai/dcvlog`。
 
