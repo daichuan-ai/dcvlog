@@ -1,8 +1,8 @@
 # DCVlog｜代川的化妆师内容 Skill
 
-> **当前正式版本：V1.9.4。** 包含采访式Vlog写稿、妆后作品表达、拼图、案例库、匿名事件统计与经学员同意的完稿回收。云端收稿需要独立部署与实机验收。
+> **当前正式版本：V1.9.5。** 仅用 `/DCVlog` 启动：1约妆Vlog旁白；2跟妆Vlog旁白（测试中，仅占位）。约妆保留原采访与案例写稿流程，并恢复结尾确认和初稿后的九种语气选择。云端收稿仍沿用原许可规则，需独立核验。
 
-**唯一身份：** `daichuan-ai / dcvlog / /dcvlog`  
+**唯一身份：** `daichuan-ai / dcvlog / /DCVlog`（命令大小写等价）
 **唯一仓库：** `https://github.com/daichuan-ai/dcvlog`
 
 ## 学员安装
@@ -22,17 +22,21 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 安装完成后重启宿主，再输入：
 
 ```text
-/dcvlog
+/DCVlog
 ```
 
-现在会看到两个入口：
+现在先显示：
 
-1. 我要开始写文案
-2. 我要做拼图
+❗ **你今天想写约妆的 Vlog 旁白，还是跟妆的 Vlog 旁白？**
+
+**1. 约妆 Vlog 旁白**
+**2. 跟妆 Vlog 旁白（测试中）**
+
+选1进入原约妆流程。选2只回复“敬请期待，代川正在整理中。”，没有跟妆采访或生成内容。品牌名统一写“代川”。
 
 **启动自动更新：**用户输入 `/dcvlog` 时，使用实际加载目录中的 `tools/update_skill.py` 自动核对官方 `main` 提交，完整同步并读回文件；不再询问“更新/继续使用”。同版本新增案例也会同步。更新前保留备份和本地新增文件，不触碰 `~/.dcvlog/` 的用户状态。成功后重读新入口继续；无网络、无执行/写入权限时如实说明本次未同步，不假装已是最新版。
 
-也可以直接自然语言输入“我要开始写文案”或“我要做拼图”。
+创作仅由 `/DCVlog` 启动；单独说“我要开始写文案”“我要做拼图”或上传照片，均提示先输入命令。历史拼图文件保留，但不作为本版前台入口。自然语言“更新 DCVlog”等维护请求沿用原机制。
 
 ## 已安装用户更新
 
@@ -54,7 +58,7 @@ npx -y skills add daichuan-ai/dcvlog -g --all
 
 本仓库保留两套兼容入口：根目录 `SKILL.md` 与 `skills/dcvlog/SKILL.md`；两处必须保持同版，**不要把四项的“Skill-only”安装包直接上传到 GitHub 根目录**，否则只会出现根目录重复的 `SKILL.md` / `references` / `telemetry-config.json`，未必更新实际安装来源。
 
-更新 GitHub 只用**完整项目更新包**：解压后进入解压目录，把**里面全部文件和文件夹（包含`skills`文件夹）**拖入 GitHub 仓库首页的 `Add file → Upload files`，覆盖提交。不要只传四项目录的Skill-only包，也不要拖一个最外层总文件夹进去。确认仓库根目录和 `skills/dcvlog/` 的 `VERSION` 均为 `1.9.4`，且两处 `SKILL.md` 的 `version` 都为 `1.9.4`，再让学员在豆包工作说“更新 DCVlog”，完全退出重开并输入 `/dcvlog`。**收稿后台须按 `docs/REVIEW_PILOT_SETUP.md` 完成公开模式和限频设置；先完成服务器再发布 Skill。**
+更新 GitHub 使用**完整项目更新包**并保持原目录：不要只传四项目录的Skill-only包，也不要把最外层解压文件夹作为新目录上传。确认仓库根目录和 `skills/dcvlog/` 的 `VERSION` 均为 `1.9.5`，且两处 `SKILL.md` 的 `version` 都为 `1.9.5`，再让学员在豆包工作说“更新 DCVlog”，重新加载后使用新版本。网页上传一次最多100个文件，本包超过100个时须分批，不能一次全拖后遗漏文件。本次不改收稿后台或更新器代码。
 
 ## V1.8.7 自愿公测：完稿回收
 
@@ -169,8 +173,8 @@ dcvlog/
 ## 版本
 
 - Skill name: `dcvlog`
-- Slash: `/dcvlog`
-- Skill Version: `1.9.4`
+- Slash: `/DCVlog`（大小写等价）
+- Skill Version: `1.9.5`
 - Corpus Version: `1.2.0`
 - Author: `daichuan-ai`
 
