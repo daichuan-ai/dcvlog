@@ -391,9 +391,49 @@ def _sync(target, check_only):
                     backup_path=backup, reread_required=True)
 
 
-def ensure_latest(skill_dir=None, check_only=False):
+def install_new(target):
+    """Install a validated release into an explicitly selected, absent directory."""
+    revision, cached_archive = latest_release()
+    # Download and validate before creating anything in the host's skill directory.
+    with tempfile.TemporaryDirectory(prefix=".dcvlog-first-install-") as directory:
+        candidate = Path(directory)
+        hashes = unpack_package(cached_archive if cached_archive is not None else download_archive(revision), candidate)
+        version = validate_package(candidate, hashes)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with update_lock(target):
+            if target.exists() or target.is_symlink():
+                raise UpdateError("busy", "Installation target appeared; retry against the existing Skill")
+            stage = Path(tempfile.mkdtemp(prefix="." + target.name + ".install-", dir=target.parent))
+            try:
+                shutil.copytree(candidate, stage, dirs_exist_ok=True)
+                save_state(stage, revision, version, hashes)
+                if not files_match(stage, hashes) or installed_version(stage) != version:
+                    raise UpdateError("verification_failed", "Initial installation verification failed")
+                os.rename(stage, target)
+                if not files_match(target, hashes) or installed_version(target) != version:
+                    # Retain the failed files without leaving an active incomplete Skill.
+                    failed = target.parent / ("." + target.name + ".failed-" + uuid.uuid4().hex)
+                    os.rename(target, failed)
+                    raise UpdateError("verification_failed", "Installed package verification failed", failed_path=str(failed))
+            finally:
+                if stage.exists():
+                    shutil.rmtree(stage)
+    return {"status": "installed", "verified": True, "skill_dir": str(target),
+            "installed_version": version, "latest_version": version, "revision": revision,
+            "reread_required": True, "host_registration_verified": False}
+
+
+def ensure_latest(skill_dir=None, check_only=False, install=False):
     requested = Path(skill_dir) if skill_dir is not None else Path(__file__).resolve().parents[1]
     try:
+        if install:
+            if skill_dir is None or not requested.is_absolute() or check_only:
+                raise UpdateError("invalid_target", "First installation requires an explicit absolute --skill-dir; --check cannot be combined")
+            target = requested.expanduser().resolve()
+            if any((p / ".git").exists() for p in (target, *target.parents)):
+                raise UpdateError("developer_checkout", "Do not install into a Git working directory")
+            if not target.exists():
+                return install_new(target)
         target = requested.expanduser().resolve(strict=True)
         if not target.is_dir():
             raise UpdateError("invalid_target", "Loaded Skill directory does not exist")
@@ -413,14 +453,60 @@ def ensure_latest(skill_dir=None, check_only=False):
         return {"status": "failed", "verified": False, "reason": "Update could not complete; inspect the installation and backups"}
 
 
+def host_install_target(host, home=None, environ=None, active_skill_dir=None):
+    """Resolve only host-supported persistent roots; never search arbitrary disks."""
+    home = Path.home() if home is None else Path(home)
+    environ = os.environ if environ is None else environ
+    if host == "workbuddy":
+        configured = (environ.get("WORKBUDDY_CONFIG_DIR", "").strip() or
+                      environ.get("CODEBUDDY_CONFIG_DIR", "").strip())
+        root = Path(configured).expanduser() if configured else home / ".workbuddy"
+        if not root.is_absolute():
+            raise UpdateError("invalid_target", "WorkBuddy configuration root must be absolute")
+        return root / "skills" / "dcvlog"
+    if host != "doubao":
+        raise UpdateError("invalid_target", "Unsupported host")
+    if active_skill_dir:
+        active = Path(active_skill_dir).expanduser().resolve(strict=True)
+        for parent in (active, *active.parents):
+            if parent.name == "workspace" and (parent / ".user_skills").is_dir():
+                return parent / ".user_skills" / "dcvlog"
+        raise UpdateError("invalid_target", "Active Doubao Skill is not under a workspace/.user_skills root")
+    candidates = [
+        home / "Library/Application Support/Doubao/Default/.doubao/agent_mode/workspace/.user_skills",
+        home / ".doubao/agent_mode/workspace/.user_skills",
+    ]
+    appdata = environ.get("APPDATA", "").strip()
+    if appdata:
+        candidates.append(Path(appdata) / "Doubao/Default/.doubao/agent_mode/workspace/.user_skills")
+    existing = {p.resolve() for p in candidates if p.is_dir()}
+    if len(existing) != 1:
+        raise UpdateError("invalid_target", "Resolve Doubao's active workspace/.user_skills from its loaded skill paths", candidates=len(existing))
+    return existing.pop() / "dcvlog"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skill-dir", help="Absolute directory of the SKILL.md actually loaded by the host")
     parser.add_argument("--check", action="store_true", help="Read-only revision check; never installs")
+    parser.add_argument("--install", action="store_true", help="Allow first installation into the host's confirmed absolute skill directory")
+    parser.add_argument("--host", choices=("workbuddy", "doubao"), help="Resolve the host's persistent user Skill directory for --install")
+    parser.add_argument("--active-skill-dir", help="Known loaded Doubao skill path to disambiguate its active workspace")
     arguments = parser.parse_args()
-    result = ensure_latest(arguments.skill_dir, arguments.check)
+    if arguments.host:
+        try:
+            if not arguments.install or arguments.skill_dir or arguments.check:
+                raise UpdateError("invalid_target", "Use --host only with --install and without --skill-dir/--check")
+            target = host_install_target(arguments.host, active_skill_dir=arguments.active_skill_dir)
+            result = ensure_latest(target, install=True)
+        except UpdateError as error:
+            result = dict(status=error.status, reason=str(error), verified=False, **error.details)
+        except OSError:
+            result = dict(status="invalid_target", reason="Cannot resolve active host directory", verified=False)
+    else:
+        result = ensure_latest(arguments.skill_dir, arguments.check, arguments.install)
     print(json.dumps(result, ensure_ascii=False))
-    return 0 if result["status"] in {"up_to_date", "updated", "update_available"} else 1
+    return 0 if result["status"] in {"installed", "up_to_date", "updated", "update_available"} else 1
 
 
 if __name__ == "__main__":
