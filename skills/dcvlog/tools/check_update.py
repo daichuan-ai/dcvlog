@@ -66,7 +66,7 @@ def check():
         return compare_versions(installed_version(), remote_version())
     except Exception:
         # Read-only checks may fail in the host or on the learner's network.
-        # Do not interrupt their writing/collage workflow.
+        # Do not interrupt their writing workflow.
         return {"status": "unavailable"}
 
 
