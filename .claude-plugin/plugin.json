@@ -1,0 +1,7 @@
+{
+  "name": "dcvlog",
+  "version": "2.0.0",
+  "description": "代川的化妆师内容 Skill：/DCVlog 启动约妆 Vlog 旁白采访与案例写稿。",
+  "author": { "name": "代川" },
+  "skills": ["./skills/dcvlog"]
+}
