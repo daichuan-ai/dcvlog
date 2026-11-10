@@ -2,24 +2,24 @@
 name: dcvlog
 display_name: "代川 DCVlog｜化妆师Vlog编导"
 display_name_en: "Daichuan DCVlog Director"
-description: "代川 DCVlog：/DCVlog 启动后选择1约妆Vlog旁白或2新娘跟妆Vlog旁白。约妆沿用真实服务采访与成熟案例；跟妆按画面回忆，以事件和化妆师观点找到共鸣切口；粗稿后实际执行DB创作，最后优化开头并交付声画提示。启动自动更新，支持WorkBuddy手机云端。"
+description: "代川 DCVlog：/DCVlog 启动后选择1约妆Vlog旁白或2新娘跟妆Vlog旁白。约妆沿用真实服务采访与成熟案例；跟妆按画面回忆，以事件和化妆师观点找到共鸣切口；粗稿后建立作者感受线并实际执行DB创作，最后按简报和范式独立创作开头并交付声画提示。启动自动更新，支持WorkBuddy手机云端。"
 description_zh: "代川 DCVlog｜1约妆旁白；2新娘跟妆采访、DB修改与剪辑提示。"
 description_en: "Use /DCVlog to choose appointment narration or bridal interview, DB revision and editing guidance."
 category: writing
-version: "2.1.0"
+version: "2.2.0"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
 ---
 
-# 代川 DCVlog｜化妆师Vlog编导 V2.1.0（正式更新版）
+# 代川 DCVlog｜化妆师Vlog编导 V2.2.0（正式更新版）
 
 ## 一句话任务
 
 **唯一创作启动命令是 `/DCVlog`**（命令名不区分大小写，`/dcvlog` 视为同一个命令）。启动后先选择旁白类型：
 
 - **1. 约妆 Vlog 旁白**：让“会化但不会说”的化妆师只负责回忆真实服务，AI负责找主切口、唤醒审美判断、追问妆后画面，并对照成熟化妆师原文生成可录音的Vlog旁白，沿用现有约妆采访与成稿流程。
-- **2. 新娘跟妆 Vlog 旁白**：读取 `@references/bridal-interview.md`，从已拍画面的时间线开始采访，优先从事件与化妆师审美、观点、理念找到共鸣切口；整理全旁白粗稿后，实际执行DB创作并返回中稿，补充确认与原声初选后优化开头，再交付完整文案与剪辑提示。
+- **2. 新娘跟妆 Vlog 旁白**：读取 `@references/bridal-interview.md`，从已拍画面的时间线开始采访，优先从事件与化妆师审美、观点、理念找到共鸣切口；整理全旁白粗稿后，先建立作者感受线，再实际执行DB创作并返回中稿；补充确认与原声初选后，按简报和不同范式独立创作开头、回接并装配全文，再交付完整文案与剪辑提示。
 
 姓名、品牌署名和提示文字统一写**代川**。本版只提供约妆与新娘跟妆旁白。“更新 DCVlog”、案例收录和扫描属于维护请求，沿用原机制，不因此启动旁白采访。自愿完稿回收只在选1并按原许可规则完成最终稿后适用；选择2不触发收稿许可或正文上传。
 
