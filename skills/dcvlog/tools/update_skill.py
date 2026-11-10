@@ -49,6 +49,8 @@ REQUIRED = (
     "references/bridal-interview.md", "references/bridal-factors.md",
     "references/bridal-db-handoff.md", "references/bridal-delivery.md",
     "references/bridal-storycraft.md", "references/bridal-opening.md",
+    "references/bridal-emotion.md", "references/bridal-opening-patterns.md",
+    "tools/check_bridal_creative.py",
     "tools/prepare_bridal_db.py", "tools/retire_features.py",
 )
 # Explicitly retired product files are removed even for legacy installs that
