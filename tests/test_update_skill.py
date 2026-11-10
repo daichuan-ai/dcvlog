@@ -56,6 +56,23 @@ def zip_archive(files, revision=A):
 
 
 class AutoUpdateTests(unittest.TestCase):
+    def test_legacy_retired_feature_removed_without_managed_state(self):
+        retired = self.target / updater.RETIRED[0]
+        retired.parent.mkdir(exist_ok=True)
+        retired.write_text('legacy feature')
+        result, _ = self.sync(package('2.0.0'))
+        self.assertEqual(result['status'], 'updated')
+        self.assertFalse(retired.exists())
+        self.assertEqual((Path(result['backup_path']) / updater.RETIRED[0]).read_text(), 'legacy feature')
+
+    def test_retired_file_reintroduced_after_sync_is_removed_on_next_launch(self):
+        self.sync(package('2.0.0'))
+        retired = self.target / updater.RETIRED[0]
+        retired.write_text('legacy feature')
+        result, _ = self.sync(package('2.0.0'))
+        self.assertEqual(result['status'], 'updated')
+        self.assertFalse(retired.exists())
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
