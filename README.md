@@ -45,6 +45,6 @@ DB官方来源：[dontbesilent2025/dbskill](https://github.com/dontbesilent2025/
 
 ## 发布与验证
 
-只维护 `skills/dcvlog/` 的正式技能；不要把 Skill-only 包展开覆盖仓库根。已安装的旧副本继续由原更新器获取标准目录，无需删除重装。此次仅调整安装结构和说明，2.0.0 的提示词、采访、DB交接、案例及原工具实现保持原字节。
+只维护 `skills/dcvlog/` 的正式技能；不要把 Skill-only 包展开覆盖仓库根。已安装的旧副本继续由原更新器获取标准目录，无需删除重装。此次调整安装结构与说明，并补上安装器在 Python 3.9 下的网络超时兼容；2.0.0 的提示词、采访、DB交接及案例保持原字节。
 
 [DB Skill 源码对照与手机云端验收边界](docs/DBSKILL_ARCHITECTURE.md)
