@@ -54,6 +54,17 @@ def check(record):
     ending = assembled.get("ending_response")
     if not text(ending) or not script.rstrip().endswith(ending.strip()):
         return fail("EMOTION_PLAN", "结尾没有实际装入作者情感回应")
+    review = assembled.get("emotion_review", {})
+    if not isinstance(review, dict) or not text(review.get("author_position")) or review.get("ending_feeling") != ending:
+        return fail("BODY_DRAFT", "缺少最终全文的作者感受复核与结尾摘句")
+    beats = review.get("beats", [])
+    if not isinstance(beats, list) or not beats:
+        return fail("BODY_DRAFT", "缺少事实与作者感受的逐节点对照")
+    for beat in beats:
+        if not isinstance(beat, dict) or not all(text(beat.get(k)) for k in ("fact_excerpt", "feeling_excerpt", "adds")):
+            return fail("BODY_DRAFT", "感受复核需实际事实摘句、感受摘句及新增态度说明")
+        if beat["fact_excerpt"] not in script or beat["feeling_excerpt"] not in script or compact(beat["fact_excerpt"]) == compact(beat["feeling_excerpt"]):
+            return fail("BODY_DRAFT", "感受复核摘句须在实际全文中，不能用同一句事实充当感受")
     promise = assembled.get("promise_evidence")
     if not text(promise) or promise not in script:
         return fail("ASSEMBLED", "缺少开头承诺在正文中的实际承接摘句")
