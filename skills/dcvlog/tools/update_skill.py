@@ -14,6 +14,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import socket
 import tarfile
 import tempfile
 import time
@@ -54,7 +55,7 @@ REQUIRED = (
 RETIRED = ("references/collage-engine.md",)
 MAX_ARCHIVE = 16 * 1024 * 1024
 MAX_UNPACKED = 64 * 1024 * 1024
-NETWORK_ERRORS = (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException)
+NETWORK_ERRORS = (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError, http.client.HTTPException)
 
 
 class UpdateError(Exception):
