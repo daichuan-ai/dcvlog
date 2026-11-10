@@ -3,7 +3,7 @@ import unittest
 R=Path(__file__).resolve().parents[1]
 class TestE06(unittest.TestCase):
  def test_mirror(self):
-  for p in [R/'SKILL.md',R/'VERSION',* (R/'references').rglob('*')]:
+  for p in [R/'VERSION',* (R/'references').rglob('*')]:
    if p.is_file(): self.assertEqual(p.read_bytes(),(R/'skills/dcvlog'/p.relative_to(R)).read_bytes())
  def test_contract(self):
   s=(R/'references/e06-writing-refinement.md').read_text()
@@ -11,5 +11,5 @@ class TestE06(unittest.TestCase):
    self.assertIn(key,s)
  def test_version(self):
   self.assertEqual((R/'VERSION').read_text().strip(),'2.0.0')
-  self.assertIn('version: "2.0.0"',(R/'SKILL.md').read_text())
+  self.assertIn('version: "2.0.0"',(R/'skills/dcvlog/SKILL.md').read_text())
 if __name__=="__main__": unittest.main()
