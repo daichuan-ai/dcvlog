@@ -11,7 +11,7 @@ for rel in ['skills/dcvlog/tools/update_skill.py','skills/dcvlog/tools/telemetry
             'cloudbase/review-collector/package.json']:
     if not (root/rel).exists():
         errors.append(f'missing telemetry file {rel}')
-for token in ['name: dcvlog','version: "1.9.5"','author: "daichuan-ai"','/dcvlog','/DCVlog','约妆 Vlog 旁白','跟妆 Vlog 旁白（测试中）','敬请期待，代川正在整理中。','更新 DCVlog','加入 DCVlog 新案例库','扫描新案例库，升级当前方法','场景 / 用途','成熟样本','service_client_total','video_client_total','第1个讲故事','40秒','collage-engine.md','aesthetic-interview.md','visual-result-draft-gate.md','post-makeup-commentary.md','version-check.md','review-collection.md','review_upload.py','首次同意','tools/check_update.py','静默查新','batch-003-raw-20261016','代川来陪你把今天这条捋出来','corpus/corpus-index.md','corpus/current-patterns.md','dcvlog_open','write_vlog_start','write_vlog_complete','collage_start','collage_complete','匿名使用统计','NEED_ASK','READY','LIMITED_DRAFT']:
+for token in ['name: dcvlog','version: "2.0.0"','author: "daichuan-ai"','/dcvlog','/DCVlog','约妆 Vlog 旁白','新娘跟妆 Vlog 旁白','bridal-interview.md','bridal-db-handoff.md','更新 DCVlog','加入 DCVlog 新案例库','扫描新案例库，升级当前方法','场景 / 用途','成熟样本','service_client_total','video_client_total','第1个讲故事','40秒','aesthetic-interview.md','visual-result-draft-gate.md','post-makeup-commentary.md','version-check.md','review-collection.md','review_upload.py','首次同意','tools/check_update.py','静默查新','batch-003-raw-20261016','代川来陪你把今天这条捋出来','corpus/corpus-index.md','corpus/current-patterns.md','dcvlog_open','write_vlog_start','write_vlog_complete','匿名使用统计','NEED_ASK','READY','LIMITED_DRAFT']:
     if token not in text:
         errors.append(f'missing {token}')
 # 累计12个运行参考；V1.8.6原有11个文件必须全部保留
@@ -47,10 +47,6 @@ for token in ['禁止再问“这个客人大概什么情况','直接进入第3�
 for token in ['化妆师主角型Vlog开头','（视频原声）']:
     if token not in opening:
         errors.append(f'opening-ending missing {token}')
-collage=(skill.parent/'references'/'collage-engine.md').read_text(encoding='utf-8')
-for token in ['1—6张','3:4','自动选主图','禁止默认做普通2×2宫格','原图保护','韩系英文标题库','换一版','❓这组照片你想怎么出图？','每张照片分别做一张独立作品页','两种都要','N + 1','工作室名字','签名名字','英文 / 拼音','已有的拉丁字母品牌词原样保留','陈述句、确认句、说明句前禁止加 `❓`','任何缩放必须等比','细节裁剪必须有明确视觉中心','半个额头','半只眼睛','版式服务照片']:
-    if token not in collage:
-        errors.append(f'collage-engine missing {token}')
 corpus_root=skill.parent/'references'/'corpus'
 for rel in ['CORPUS_VERSION','corpus-index.md','current-patterns.md','batch-001-baseline/cases.md','batch-002-new/README.md','batch-003-raw-20261016/cases.md','batch-003-raw-20261016/selection-guide.md']:
     if not (corpus_root/rel).exists():
@@ -83,10 +79,10 @@ for label, body, tokens in [
     for token in tokens:
         if token not in body:
             errors.append(f'{label} missing regression guard {token}')
-if (root/'VERSION').read_text(encoding='utf-8').strip() != '1.9.5':
-    errors.append('root VERSION != 1.9.5')
+if (root/'VERSION').read_text(encoding='utf-8').strip() != '2.0.0':
+    errors.append('root VERSION != 2.0.0')
 config=(skill.parent/'telemetry-config.json').read_text(encoding='utf-8')
-for token in ['"skill_version": "1.9.5"','"corpus_version": "1.2.0"']:
+for token in ['"skill_version": "2.0.0"','"corpus_version": "1.2.0"']:
     if token not in config:
         errors.append(f'telemetry config missing {token}')
 if not (skill.parent/'tools'/'check_update.py').is_file():
@@ -112,6 +108,6 @@ if errors:
 print('PASS')
 print(f'top_level_references={len(actual)}')
 print(f'raw_cases={count}')
-print('version=1.9.5')
+print('version=2.0.0')
 print('corpus_version=1.2.0')
 print('raw_sha256='+hashlib.sha256(raw.read_bytes()).hexdigest())

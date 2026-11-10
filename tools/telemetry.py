@@ -21,8 +21,6 @@ ALLOWED_EVENTS = {
     "dcvlog_open",
     "write_vlog_start",
     "write_vlog_complete",
-    "collage_start",
-    "collage_complete",
     "update_requested",
 }
 

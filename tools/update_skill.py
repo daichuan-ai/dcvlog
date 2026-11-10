@@ -45,7 +45,13 @@ REQUIRED = (
     "references/corpus/batch-002-new/B002-002.md",
     "references/corpus/batch-002-new/B002-003.md",
     RAW_CASE,
+    "references/bridal-interview.md", "references/bridal-factors.md",
+    "references/bridal-db-handoff.md", "references/bridal-delivery.md",
+    "tools/prepare_bridal_db.py", "tools/retire_features.py",
 )
+# Explicitly retired product files are removed even for legacy installs that
+# predate managed-file state. The full previous installation is backed up.
+RETIRED = ("references/collage-engine.md",)
 MAX_ARCHIVE = 16 * 1024 * 1024
 MAX_UNPACKED = 64 * 1024 * 1024
 NETWORK_ERRORS = (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException)
@@ -242,6 +248,8 @@ def unpack_entries(entries, destination):
 
 
 def validate_package(root, hashes):
+    if any(name in hashes for name in RETIRED):
+        raise UpdateError("invalid_release", "Release contains a retired feature")
     for name in REQUIRED:
         if name not in hashes or not safe_path(root, name).is_file():
             raise UpdateError("invalid_release", "Incomplete package: " + name)
@@ -327,6 +335,10 @@ def install_package(target, candidate, revision, version, hashes, previous):
     try:
         # Preserve local additions; never touch ~/.dcvlog or another installation.
         shutil.copytree(target, stage, dirs_exist_ok=True, symlinks=True)
+        for name in RETIRED:
+            path = safe_path(stage, name)
+            if path.is_file():
+                path.unlink()
         for name in (previous or {}).get("files", {}):
             path = safe_path(stage, name)
             if name not in hashes and path.is_file() and file_hash(path) == previous["files"][name]:
@@ -372,14 +384,16 @@ def _sync(target, check_only):
     revision, cached_archive = latest_release()
     state = load_state(target)
     common = {"skill_dir": str(target), "installed_version": version, "revision": revision}
-    if state and state["revision"] == revision and files_match(target, state["files"]):
+    retired_present = any(safe_path(target, name).exists() for name in RETIRED)
+    if state and state["revision"] == revision and files_match(target, state["files"]) and not retired_present:
         return dict(common, status="up_to_date", verified=True, latest_version=version)
     with tempfile.TemporaryDirectory(prefix=".dcvlog-download-", dir=target.parent) as directory:
         candidate = Path(directory)
         hashes = unpack_package(cached_archive if cached_archive is not None else download_archive(revision), candidate)
         latest = validate_package(candidate, hashes)
         obsolete = set((state or {}).get("files", {})) - set(hashes)
-        matches = files_match(target, hashes) and not any(safe_path(target, name).exists() for name in obsolete)
+        matches = (files_match(target, hashes) and not retired_present
+                   and not any(safe_path(target, name).exists() for name in obsolete))
         if check_only:
             return dict(common, status="up_to_date" if matches else "update_available",
                         verified=matches, latest_version=latest)
