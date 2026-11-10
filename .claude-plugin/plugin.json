@@ -1,6 +1,6 @@
 {
   "name": "dcvlog",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "代川的化妆师内容 Skill：/DCVlog 启动约妆旁白或新娘跟妆采访、DB创作与开头优化。",
   "author": { "name": "代川" },
   "skills": ["./skills/dcvlog"]
