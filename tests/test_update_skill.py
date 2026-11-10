@@ -56,6 +56,27 @@ def zip_archive(files, revision=A):
 
 
 class AutoUpdateTests(unittest.TestCase):
+    def test_legacy_install_receives_story_and_opening_knowledge(self):
+        names = ('references/bridal-storycraft.md', 'references/bridal-opening.md')
+        for name in names:
+            (self.target / name).unlink()
+        files = package('2.1.0', {name: (ROOT / 'skills/dcvlog' / name).read_bytes() for name in names})
+        result, _ = self.sync(files)
+        self.assertEqual(result['status'], 'updated')
+        for name in names:
+            self.assertEqual((self.target / name).read_bytes(), files[name])
+        self.assertEqual(self.sync(files)[0]['status'], 'up_to_date')
+
+    def test_missing_writing_knowledge_rejects_release_and_preserves_old_skill(self):
+        before = (self.target / 'SKILL.md').read_bytes()
+        for name in ('references/bridal-storycraft.md', 'references/bridal-opening.md'):
+            with self.subTest(name=name):
+                files = package('2.1.0')
+                del files[name]
+                result, _ = self.sync(files)
+                self.assertEqual(result['status'], 'invalid_release')
+                self.assertEqual((self.target / 'SKILL.md').read_bytes(), before)
+
     def test_legacy_retired_feature_removed_without_managed_state(self):
         retired = self.target / updater.RETIRED[0]
         retired.parent.mkdir(exist_ok=True)
@@ -211,6 +232,28 @@ class AutoUpdateTests(unittest.TestCase):
         self.assertEqual((self.target / "references/中文说明.md").read_text(), "中文文件名。\n")
         self.assertEqual(len(requested), 3)
         self.assertTrue(requested[-1].startswith(updater.MAIN_ARCHIVE))
+
+    def test_python39_socket_timeout_falls_back_to_main_zip(self):
+        raw = zip_archive(package())
+        requested = []
+        def transport(url, limit, timeout):
+            requested.append(url)
+            if url.startswith(updater.MAIN_ARCHIVE + "?check="):
+                return raw
+            raise updater.socket.timeout("metadata read timed out")
+        with patch.object(updater, "get_bytes", side_effect=transport):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "updated")
+        self.assertTrue(result["verified"])
+        self.assertEqual(len(requested), 3)
+        self.assertTrue(requested[-1].startswith(updater.MAIN_ARCHIVE))
+
+    def test_python39_socket_timeout_is_reported_as_unavailable(self):
+        with patch.object(updater, "get_bytes", side_effect=updater.socket.timeout("offline")):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "unavailable")
+        self.assertFalse(result["verified"])
+        self.assertEqual(updater.installed_version(self.target), "1.8.3")
 
     def test_official_zip_missing_commit_identity_is_rejected(self):
         raw = zip_archive(package(), revision="not-a-commit")
