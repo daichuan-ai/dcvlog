@@ -14,6 +14,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import socket
 import tarfile
 import tempfile
 import time
@@ -47,6 +48,7 @@ REQUIRED = (
     RAW_CASE,
     "references/bridal-interview.md", "references/bridal-factors.md",
     "references/bridal-db-handoff.md", "references/bridal-delivery.md",
+    "references/bridal-storycraft.md", "references/bridal-opening.md",
     "tools/prepare_bridal_db.py", "tools/retire_features.py",
 )
 # Explicitly retired product files are removed even for legacy installs that
@@ -54,7 +56,7 @@ REQUIRED = (
 RETIRED = ("references/collage-engine.md",)
 MAX_ARCHIVE = 16 * 1024 * 1024
 MAX_UNPACKED = 64 * 1024 * 1024
-NETWORK_ERRORS = (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException)
+NETWORK_ERRORS = (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError, http.client.HTTPException)
 
 
 class UpdateError(Exception):
