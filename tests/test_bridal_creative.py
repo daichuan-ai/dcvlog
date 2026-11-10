@@ -28,7 +28,11 @@ def record():
         'opening_choice': '1',
         'assembled': {'script': '忙碌也有温度。\n她问了时间。真是一刻也闲不下来。\n后来坐下喝水。原来忙碌也有温度。',
                       'emotion_evidence': ['真是一刻也闲不下来。'],
-                      'ending_response': '原来忙碌也有温度。', 'promise_evidence': '后来坐下喝水。'}
+                      'ending_response': '原来忙碌也有温度。',
+                      'emotion_review': {'author_position': '忙碌中也有照顾',
+                                         'beats': [{'fact_excerpt': '她问了时间。', 'feeling_excerpt': '真是一刻也闲不下来。', 'adds': '作者感叹忙碌'}],
+                                         'ending_feeling': '原来忙碌也有温度。'},
+                      'promise_evidence': '后来坐下喝水。'}
     }
 
 
@@ -61,6 +65,19 @@ class CreativeGateTests(unittest.TestCase):
 
     def test_declared_emotion_evidence_must_exist_in_text(self):
         r = record(); r['assembled']['emotion_evidence'] = ['正文里没有这句话']
+        self.assertEqual(gate.check(r)['return_to'], 'BODY_DRAFT')
+
+    def test_missing_emotion_review_cannot_pass_with_only_literary_summary(self):
+        r = record(); del r['assembled']['emotion_review']
+        self.assertEqual(gate.check(r)['return_to'], 'BODY_DRAFT')
+
+    def test_emotion_review_needs_distinct_actual_quotes_and_an_explanation(self):
+        r = record(); beat = r['assembled']['emotion_review']['beats'][0]
+        beat['feeling_excerpt'] = beat['fact_excerpt']
+        self.assertEqual(gate.check(r)['return_to'], 'BODY_DRAFT')
+        r = record(); r['assembled']['emotion_review']['beats'][0]['feeling_excerpt'] = '正文没有这句'
+        self.assertEqual(gate.check(r)['return_to'], 'BODY_DRAFT')
+        r = record(); del r['assembled']['emotion_review']['beats'][0]['adds']
         self.assertEqual(gate.check(r)['return_to'], 'BODY_DRAFT')
 
     def test_ending_and_promise_cannot_be_checked_with_empty_flags(self):
