@@ -56,6 +56,27 @@ def zip_archive(files, revision=A):
 
 
 class AutoUpdateTests(unittest.TestCase):
+    def test_legacy_install_receives_story_and_opening_knowledge(self):
+        names = ('references/bridal-storycraft.md', 'references/bridal-opening.md')
+        for name in names:
+            (self.target / name).unlink()
+        files = package('2.1.0', {name: (ROOT / 'skills/dcvlog' / name).read_bytes() for name in names})
+        result, _ = self.sync(files)
+        self.assertEqual(result['status'], 'updated')
+        for name in names:
+            self.assertEqual((self.target / name).read_bytes(), files[name])
+        self.assertEqual(self.sync(files)[0]['status'], 'up_to_date')
+
+    def test_missing_writing_knowledge_rejects_release_and_preserves_old_skill(self):
+        before = (self.target / 'SKILL.md').read_bytes()
+        for name in ('references/bridal-storycraft.md', 'references/bridal-opening.md'):
+            with self.subTest(name=name):
+                files = package('2.1.0')
+                del files[name]
+                result, _ = self.sync(files)
+                self.assertEqual(result['status'], 'invalid_release')
+                self.assertEqual((self.target / 'SKILL.md').read_bytes(), before)
+
     def test_legacy_retired_feature_removed_without_managed_state(self):
         retired = self.target / updater.RETIRED[0]
         retired.parent.mkdir(exist_ok=True)
