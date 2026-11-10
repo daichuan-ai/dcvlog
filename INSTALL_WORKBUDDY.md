@@ -1,23 +1,15 @@
-# WorkBuddy｜DCVlog 2.0.0 自动更新
+# WorkBuddy 安装与自动更新
 
-## 已安装且已有更新器
+在手机或电脑的 WorkBuddy 对话框输入一次：
 
-在WorkBuddy手机云端或电脑端的新对话输入 `/DCVlog`。宿主先运行当前实际加载目录的 `tools/update_skill.py --skill-dir "<实际加载目录>"`，核对官方 `daichuan-ai/dcvlog` 的main提交，备份并同步完整包。
+> 安装代川 DCVlog：https://github.com/daichuan-ai/dcvlog。请按 INSTALL.md 完成安装并启用自动更新。
 
-返回 `updated` 或 `up_to_date` 且 `verified:true` 后，重读同一目录的新版 `SKILL.md`；运行其中指定的退役清理工具，然后显示：
+之后输入 `/DCVlog`。选择「1.约妆 Vlog 旁白」开始采访、确认开场与结尾、选择语气并完成旁白；选择「2.新娘跟妆 Vlog 旁白」进入跟妆采访、DB修改与声画交付。
 
-**1. 约妆 Vlog 旁白**
+安装 AI 必须按 [INSTALL.md](INSTALL.md) 区分手机云端任务、遥控电脑和本地任务。在当前使用环境的技能列表确认 DCVlog，再新建任务验证；电脑的个人技能库不等于云端个人库。项目配置中的 Skill 保存在云端，适合需要跨端共用的项目，但不能把沙箱文件夹当成项目配置。
 
-**2. 新娘跟妆 Vlog 旁白**
+每次 `/DCVlog` 自动核对官方提交并同步，包括同版本增加的案例。断网或无权限时保留旧版并说明本次未同步；需要重载时新开会话，无需重复安装。
 
-选2直接进入已拍画面的时间线采访。跟妆模块已随本包更新，无需另装技能或下载ZIP。若宿主无法在当前会话重读规则，提示新开会话，不把旧会话加载内容当作已更新。
+平台要求导入时，使用完整 `dcvlog/` 技能 ZIP，不能只上传 SKILL.md。导入到本次使用的云端个人库或项目 Skill 配置，不能导入电脑个人库后宣称手机已生效。当前环境无法完成注册时，需明确报告这一项，不能宣称“一次安装已完成”。
 
-## DB 依赖
-
-到跟妆第10步，查找当前执行环境能访问的DB安装。手机本地文件、电脑安装与云端沙箱不保证共享；应以本次任务实际可读路径为准。未安装则通过本包 `tools/prepare_bridal_db.py` 从指定DB官方仓库临时取得所需原始模块与资源，实际执行后返回中稿。网络或资源获取失败时保留进度，不能自由写一份来冒充DB中稿。
-
-## 更新失败与旧版迁移
-
-先取得原更新任务最终JSON，不重复启动多个更新。核对的是当前实际加载目录，不是另一台设备或另一份全局副本。无联网/执行/写入权限时说明缺项，不修改代理或宿主权限。不能仅凭GitHub已发布认定手机已成功。
-
-没有更新器的旧安装或首次安装的新学员，可让宿主读取仓库 `INSTALL.md` 的首次安装/迁移流程。此项不适用于已经具有更新器的学员，不要求他们重新安装。
+官方依据：[手机技能安装](https://www.codebuddy.cn/docs/workbuddymini/features/Attachments-and-Skills) · [项目与云端技能库](https://www.codebuddy.cn/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Project) · [技能导入](https://www.codebuddy.cn/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Skills-Market)

@@ -8,27 +8,62 @@
 
 安装成功后，日常只输入 `/DCVlog`。安装和更新沿用官方仓库；不要求学员操作终端、挑选目录、复制多个命令或每次重新安装。若宿主有权限或安全确认卡，仍按宿主要求操作，不绕过。
 
-## 给执行安装的 AI：先区分首次安装和已有安装
+## 给执行安装的 AI：先识别环境和安装渠道
 
-1. 按宿主真实规则定位持久技能目录。**WorkBuddy**：当前程序 `createSkillsService` 从 `$WORKBUDDY_CONFIG_DIR/skills` 读取，未设时用 `$CODEBUDDY_CONFIG_DIR/skills`，再未设用 `~/.workbuddy/skills`；程序监听此目录变化并刷新列表，不把 `.codebuddy/skills` 或临时工作区当作同一个目录。**豆包工作**：其内置 `skill-creator-for-work` 要求安装到当前环境已存在的 `workspace/.user_skills`；从本次加载的内置 Skill 路径确定对应 workspace。macOS 实测位置为 `~/Library/Application Support/Doubao/Default/.doubao/agent_mode/workspace/.user_skills`，Linux/云端路径可能不同。已有 DCVlog 时以本次真实加载路径为准；不扫描整个磁盘，不要求学员选路径。
-2. 检查本次工具环境能否执行 Python 3、访问 GitHub 官方 HTTPS 并写入已确认的目标目录。优先使用宿主现有运行时，不擅自安装系统软件或更改网络；缺能力时只报告具体缺口，不生成替代 Skill。不先依赖 `npx skills`、Git 或系统 unzip。
-3. 用 Python 标准库 urllib 下载官方主分支 ZIP：`https://codeload.github.com/daichuan-ai/dcvlog/zip/refs/heads/main`。HTTPS 最终域名只能是 GitHub 官方域名；下载最多16 MiB。用 zipfile 检查 ZIP 注释为40位十六进制提交标识，并核对 `dcvlog-main/skills/dcvlog/SKILL.md` 身份为 `dcvlog`、文件头版本与相邻 `VERSION` 一致。只将 `dcvlog-main/skills/dcvlog/tools/update_skill.py` 读入新建临时目录，不先覆盖旧目录、不执行包内其他脚本、不临时重写安装器。
-4. 执行官方工具（由 AI 代为调用，学员不用复制这条终端命令）：
+**先判断工具运行在手机云端沙箱、遥控电脑，还是本地电脑。** 用户设备是手机，不代表工具运行在手机；使用工具返回的实际路径和宿主能力判断。不要把 macOS 路径套进 Linux 云端。下面所有终端操作由 AI 代执行，学员只粘贴开头那一句。
 
-   ```text
-   python3 "<临时目录>/update_skill.py" --install --host workbuddy
-   ```
+### 1. 已有安装
 
-   WorkBuddy 使用上面的命令；豆包使用 `--install --host doubao --active-skill-dir "<本次已加载的内置Skill绝对目录>"`，由工具定位该 workspace 的 `.user_skills/dcvlog`。已有安装也可传 `--install --skill-dir "<实际DCVlog目录>"`。这些参数由 AI 填写，学员仍只粘贴开头那一句。
+从本次宿主技能元信息取得实际加载的 DCVlog 目录。已有完整安装直接调用该目录的 `tools/update_skill.py --skill-dir "<实际目录>"`，不要再制造第二份。目录冲突、注册和只读限制按下文处理。
 
-   `--install` 支持空目标的首次安装；已有正常安装则自动走原备份、更新、读回流程。遇到同名但身份不符或损坏的目录停止，不删除旧文件或创建假的占位 SKILL。临时下载必须取自本次官方 ZIP；不能调用旧副本里不支持首次安装的工具。
-5. 后台执行时跟踪**原任务ID**到最终结果，不因前台等待超时重复启动。仅当返回 `installed/updated/up_to_date` 且 `verified:true`，才能说明文件安装已通过校验；核对返回的 `skill_dir` 确为本宿主目标，并读取 `SKILL.md`、`VERSION`、`tools/update_skill.py` 和三份 B002 创作范本。
-6. 按宿主支持的方式完成个人技能注册/刷新/启用，使用宿主已安装列表或当前可发现技能元信息确认 `dcvlog` 可见、路径与上一步一致。安装器返回的 `host_registration_verified:false` 是明确提醒：**文件写入成功不证明技能列表已注册成功**。没有注册或发现证据时，说「文件已安装，技能列表生效尚未验证」，不能说全部完成。宿主确实要求用户点击导入或新开会话时，只说明这一个必要操作，不让用户重复安装。
-7. 安装本身不要自动进入采访、调用遥测或上传文案。验证成功后前台只需回复：
+### 2. 首次安装：标准源 + 宿主接入
 
-   > DCVlog 已安装，自动更新已就绪。新建对话输入 /DCVlog 开始。
+这是参考 DB Skill 的两层方式：Skills CLI 管理标准技能源，宿主适配器把它接入真实技能目录。
 
-   若当前会话已经支持刷新则可省略「新建对话」。未验证的注册、重载、网络能力必须如实说明。
+宿主允许命令执行，且已有 Node.js、npx、Git 时执行：
+
+```bash
+npx -y skills add daichuan-ai/dcvlog -g --skill dcvlog -a universal -y
+```
+
+不要使用 `--all` 安装到无关 Agent。检查 CLI 实际返回的安装路径，读取其中的 `SKILL.md`、`VERSION`、更新器及案例。常见公共源是 `~/.agents/skills/dcvlog`，但以实际输出为准。`-a universal` 仅安装标准公共源，由下一步接入当前宿主，不批量写入其他 Agent。CLI 的 `-g` 只表示当前运行环境的全局目录，不是 WorkBuddy 或豆包的账号云端注册。
+
+如果本宿主已发现该源，不再链接。否则，在**确认当前宿主的技能目录后**运行源中附带的适配器：
+
+```text
+python3 "<标准源>/scripts/link_host.py" --host workbuddy --source "<标准源>"
+```
+
+- **WorkBuddy 本地／遥控电脑**：依次遵循 `WORKBUDDY_CONFIG_DIR`、`CODEBUDDY_CONFIG_DIR`、`~/.workbuddy`，技能目录为其 `skills/dcvlog`。支持非默认配置目录。
+- **豆包工作**：将 `--host workbuddy` 改为 `--host doubao --active-skill-dir "<本次已加载的内置Skill绝对目录>"`，从当前环境真实 workspace 定位已有 `.user_skills/dcvlog`。不要照搬开发机的 macOS 路径。
+- **手机云端**：先读取当前宿主的内置安装技能、工具说明或技能元信息。若它明确给出可发现的技能落点，可传 `--target-dir "<宿主确认的绝对目录>/dcvlog"`；不得猜 `/root/workbuddy/skills`，也不得把当前任务临时目录称为持久库。文件接入后仍需完成下一节云端注册验收。
+
+适配器只建立指向同一完整源的目录链接，已有真实目录、断链或其他源一律保留并报告冲突。已有完整 DCVlog 应使用其更新器；不能删除用户目录来解决冲突。源必须是正式安装目录，不能链接临时克隆／下载目录。系统不允许链接时使用下面的官方完整包安装通道，不临时重写一份技能。
+
+### 3. 无 npx／Git 或链接能力时
+
+使用当前环境已有 Python 3 与官方 ZIP，不要求学员安装软件：
+
+1. 用 Python 标准库 urllib 下载 `https://codeload.github.com/daichuan-ai/dcvlog/zip/refs/heads/main`，最多16 MiB，最终域名只能是 GitHub 官方域名。
+2. 用 zipfile 检查 ZIP 注释为40位提交标识；核对 `dcvlog-main/skills/dcvlog/SKILL.md` 的 name 为 dcvlog、头部版本与 VERSION 一致。只把其中 `tools/update_skill.py` 写入新临时目录。
+3. 执行 `python3 "<临时目录>/update_skill.py" --install --host workbuddy`；豆包将 `--host workbuddy` 改为 `--host doubao --active-skill-dir "<内置Skill实际目录>"`。云端仅当宿主已确认目标目录时用 `--install --skill-dir "<确认目录>/dcvlog"`；不靠本地默认目录猜云端规则。
+4. 仅返回 `installed/updated/up_to_date` 且 `verified:true` 才说明文件通过校验。后台执行时跟踪原任务 ID 到最终结果，不重复启动。
+
+完整包安装保留原备份、锁定原文校验、失败恢复和本地新增文件保护。没有 Python、执行或写入能力时，准备完整技能 ZIP，走宿主原生上传／导入；明确具体缺项，不能回复“安装完成”。
+
+### 4. 技能列表与云端持久注册
+
+文件写入或链接成功以后，按宿主支持的技能安装／导入能力，将 DCVlog 加入**当前使用环境**的已安装列表并启用。适配器与更新器返回的 `host_registration_verified:false` 是提醒：脚本没有替平台完成账号注册。
+
+WorkBuddy 官方说明：Web 与客户端个人 Skill 库互不相通，云上任务读云上个人库；项目配置中的 Skill 在云端保存并跨端统一。因此手机云端应核对云端已安装库；使用项目时也可导入项目的 Skill 配置。仅放进沙箱、电脑个人库或项目文件夹不等于完成云端配置。没有宿主注册工具时，准备好完整 ZIP，告知必须在当前环境的技能面板导入这一项操作，不能伪造 marketplace ID。
+
+验收顺序：当前技能列表可见且启用 → 新任务 `/DCVlog` 可发现 → 新任务重新取得实际加载路径并执行更新器。能检查重建／更换沙箱时再验证一次；没有此证据时标注“跨容器持久性未验证”。Claude 的 marketplace 声明只用于 Claude 插件安装，不能拿它证明 WorkBuddy 或豆包账号自动恢复。
+
+安装本身不启动采访或上传内容。文件校验、列表、新任务均通过后，回复：
+
+> DCVlog 已安装。以后输入 /DCVlog，会在使用时自动检查并同步更新。
+
+任何未验证项单独如实说明。不要承诺离线、只读目录或平台不允许执行时仍能取得最新版。
 
 ## 自动更新发生在何时
 
