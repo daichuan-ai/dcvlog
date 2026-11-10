@@ -212,6 +212,28 @@ class AutoUpdateTests(unittest.TestCase):
         self.assertEqual(len(requested), 3)
         self.assertTrue(requested[-1].startswith(updater.MAIN_ARCHIVE))
 
+    def test_python39_socket_timeout_falls_back_to_main_zip(self):
+        raw = zip_archive(package())
+        requested = []
+        def transport(url, limit, timeout):
+            requested.append(url)
+            if url.startswith(updater.MAIN_ARCHIVE + "?check="):
+                return raw
+            raise updater.socket.timeout("metadata read timed out")
+        with patch.object(updater, "get_bytes", side_effect=transport):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "updated")
+        self.assertTrue(result["verified"])
+        self.assertEqual(len(requested), 3)
+        self.assertTrue(requested[-1].startswith(updater.MAIN_ARCHIVE))
+
+    def test_python39_socket_timeout_is_reported_as_unavailable(self):
+        with patch.object(updater, "get_bytes", side_effect=updater.socket.timeout("offline")):
+            result = updater.ensure_latest(self.target)
+        self.assertEqual(result["status"], "unavailable")
+        self.assertFalse(result["verified"])
+        self.assertEqual(updater.installed_version(self.target), "1.8.3")
+
     def test_official_zip_missing_commit_identity_is_rejected(self):
         raw = zip_archive(package(), revision="not-a-commit")
         with patch.object(updater, "remote_revision", side_effect=TimeoutError), \
