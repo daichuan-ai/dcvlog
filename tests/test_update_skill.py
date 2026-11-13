@@ -15,6 +15,13 @@ SPEC = importlib.util.spec_from_file_location("dcvlog_auto_update", ROOT / "skil
 updater = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(updater)
 A, B = "a" * 40, "b" * 40
+SELF_EXPRESSION_FILES = (
+    "references/self-expression/index.md",
+    "references/self-expression/interview-branches.md",
+    "references/self-expression/material-memory.md",
+    "references/self-expression/direction-comparison.md",
+    "references/self-expression/rough-draft.md",
+)
 
 
 def package(version="1.9.4", extra=None):
@@ -56,6 +63,60 @@ def zip_archive(files, revision=A):
 
 
 class AutoUpdateTests(unittest.TestCase):
+    def test_legacy_install_receives_complete_self_expression_module(self):
+        for name in SELF_EXPRESSION_FILES:
+            (self.target / name).unlink()
+        (self.target / "references/self-expression").rmdir()
+        local = self.target / "references/local-notes.md"
+        local.write_text("Local learner notes stay in this installation.\n")
+        before = {p.relative_to(self.target): p.read_bytes()
+                  for p in self.target.rglob("*") if p.is_file()}
+        references = {name: ("Module content: " + name + "\n").encode()
+                      for name in SELF_EXPRESSION_FILES}
+        files = package("2.3.0", references)
+
+        result, calls = self.sync(files)
+
+        self.assertEqual(result["status"], "updated")
+        self.assertTrue(result["verified"])
+        self.assertEqual(calls, 1)
+        self.assertEqual(updater.installed_version(self.target), "2.3.0")
+        backup = Path(result["backup_path"])
+        self.assertEqual({p.relative_to(backup): p.read_bytes()
+                          for p in backup.rglob("*") if p.is_file()}, before)
+        self.assertEqual(local.read_bytes(), before[local.relative_to(self.target)])
+        for name in SELF_EXPRESSION_FILES:
+            self.assertEqual((self.target / name).read_bytes(), references[name])
+            self.assertIn(name, updater.load_state(self.target)["files"])
+        result, calls = self.sync(files)
+        self.assertEqual(result["status"], "up_to_date")
+        self.assertTrue(result["verified"])
+        self.assertEqual(calls, 0)
+
+    def test_missing_self_expression_file_preserves_entire_legacy_install(self):
+        for name in SELF_EXPRESSION_FILES:
+            (self.target / name).unlink()
+        (self.target / "references/self-expression").rmdir()
+        local = self.target / "references/local-notes.md"
+        local.write_text("Preserve local additions even when a release is incomplete.\n")
+        before = {p.relative_to(self.root): p.read_bytes()
+                  for p in self.root.rglob("*") if p.is_file()}
+        directories = {p.relative_to(self.root)
+                       for p in self.root.rglob("*") if p.is_dir()}
+
+        for name in SELF_EXPRESSION_FILES:
+            with self.subTest(missing=name):
+                files = package("2.3.0")
+                del files[name]
+                result, calls = self.sync(files)
+                self.assertEqual(result["status"], "invalid_release")
+                self.assertFalse(result["verified"])
+                self.assertEqual(calls, 1)
+                self.assertEqual({p.relative_to(self.root): p.read_bytes()
+                                  for p in self.root.rglob("*") if p.is_file()}, before)
+                self.assertEqual({p.relative_to(self.root)
+                                  for p in self.root.rglob("*") if p.is_dir()}, directories)
+
     def test_legacy_install_receives_story_and_opening_knowledge(self):
         names = ('references/bridal-storycraft.md', 'references/bridal-opening.md', 'references/bridal-emotion.md', 'references/bridal-opening-patterns.md', 'tools/check_bridal_creative.py')
         for name in names:
