@@ -50,6 +50,11 @@ REQUIRED = (
     "references/bridal-db-handoff.md", "references/bridal-delivery.md",
     "references/bridal-storycraft.md", "references/bridal-opening.md",
     "references/bridal-emotion.md", "references/bridal-opening-patterns.md",
+    "references/self-expression/index.md",
+    "references/self-expression/interview-branches.md",
+    "references/self-expression/material-memory.md",
+    "references/self-expression/direction-comparison.md",
+    "references/self-expression/rough-draft.md",
     "tools/check_bridal_creative.py",
     "tools/prepare_bridal_db.py", "tools/retire_features.py",
 )
