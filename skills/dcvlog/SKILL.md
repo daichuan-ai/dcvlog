@@ -6,7 +6,7 @@ description: "代川 DCVlog：/DCVlog 启动后选择1约妆Vlog旁白、2新娘
 description_zh: "代川 DCVlog｜1约妆旁白；2新娘跟妆旁白；3化妆师真实表达；4通用文字润色。"
 description_en: "Use /DCVlog to choose appointment narration, bridal narration with DB revision and editing guidance, or makeup-artist self-expression through interviews, direction comparison and an editable spoken draft, or general-purpose Chinese sentence polishing."
 category: writing
-version: "2.5.1"
+version: "2.5.2"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
