@@ -2,6 +2,7 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import tarfile
 import tempfile
@@ -15,6 +16,13 @@ SPEC = importlib.util.spec_from_file_location("dcvlog_auto_update", ROOT / "skil
 updater = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(updater)
 A, B = "a" * 40, "b" * 40
+TEXT_POLISH_FILES = (
+    "references/text-polish/index.md",
+    "references/text-polish/references/language-methods.md",
+    "references/text-polish/references/generation-workbench.md",
+    "references/text-polish/references/language-profile.md",
+    "references/text-polish/references/source-index.md",
+)
 SELF_EXPRESSION_FILES = (
     "references/self-expression/index.md",
     "references/self-expression/interview-branches.md",
@@ -159,7 +167,7 @@ class AutoUpdateTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
-        self.target = self.root / "installed"
+        self.target = self.root / "skills/installed"
         write_files(self.target, package("1.8.3"))
 
     def sync(self, files=None, revision=A, target=None, check_only=False):
@@ -176,6 +184,131 @@ class AutoUpdateTests(unittest.TestCase):
         self.assertEqual(updater.installed_version(self.target), "1.9.4")
         self.assertEqual(updater.installed_version(Path(result["backup_path"])), "1.8.3")
         self.assertEqual(calls, 1)
+
+    def test_recursive_discovery_never_sees_candidate_stage_or_backup(self):
+        scan_root = self.target.parent
+        observed = []
+        original_unpack = updater.unpack_package
+        original_copy = updater.shutil.copytree
+        original_replace = updater.os.replace
+
+        def inspect():
+            entries = list(scan_root.rglob("SKILL.md"))
+            self.assertIn(entries, ([], [self.target / "SKILL.md"]))
+            observed.append(entries)
+
+        def unpack(raw, destination):
+            result = original_unpack(raw, destination)
+            self.assertNotIn(scan_root, destination.parents)
+            inspect()
+            return result
+
+        def copy(source, destination, *args, **kwargs):
+            result = original_copy(source, destination, *args, **kwargs)
+            inspect()
+            return result
+
+        def replace(source, destination):
+            result = original_replace(source, destination)
+            inspect()
+            return result
+
+        with patch.object(updater, "unpack_package", side_effect=unpack), \
+                patch.object(updater.shutil, "copytree", side_effect=copy), \
+                patch.object(updater.os, "replace", side_effect=replace):
+            result, _ = self.sync()
+        self.assertEqual(result["status"], "updated")
+        self.assertGreater(len(observed), 3)
+        self.assertEqual(list(scan_root.rglob("SKILL.md")), [self.target / "SKILL.md"])
+        self.assertNotIn(scan_root, Path(result["backup_path"]).parents)
+        self.assertEqual(updater.installed_version(Path(result["backup_path"])), "1.8.3")
+
+    def test_common_host_layouts_keep_workspaces_outside_discovery(self):
+        for name in (".workbuddy/skills", ".agents/skills", "cloud/.user_skills", "cloud/.skills", "custom-library"):
+            with self.subTest(layout=name):
+                target = self.root / name / "dcvlog"
+                write_files(target, package("1.8.3"))
+                result, _ = self.sync(target=target)
+                self.assertEqual(result["status"], "updated")
+                self.assertEqual(list(target.parent.rglob("SKILL.md")), [target / "SKILL.md"])
+                self.assertNotIn(target.parent, Path(result["backup_path"]).parents)
+
+    def test_nested_legacy_skill_directory_uses_outer_discovery_root(self):
+        target = self.root / "skills/legacy/skills/dcvlog"
+        write_files(target, package("1.8.3"))
+        result, _ = self.sync(target=target)
+        self.assertEqual(result["status"], "updated")
+        self.assertNotIn(self.root / "skills", Path(result["backup_path"]).parents)
+
+    def test_download_scratch_does_not_follow_tempdir_into_skills(self):
+        scratch = self.target.parent / "temp"
+        scratch.mkdir()
+        with patch.object(updater.tempfile, "gettempdir", return_value=str(scratch)):
+            result, _ = self.sync(check_only=True)
+        self.assertEqual(result["status"], "update_available")
+        self.assertEqual(list(self.target.parent.rglob("SKILL.md")), [self.target / "SKILL.md"])
+        self.assertEqual(list(scratch.iterdir()), [])
+
+    def test_workspace_symlink_is_rejected_before_install_changes(self):
+        outside = self.root / "outside"
+        outside.mkdir()
+        (self.root / ".dcvlog-update-data").symlink_to(outside, target_is_directory=True)
+        result, _ = self.sync()
+        self.assertEqual(result["status"], "unsafe_path")
+        self.assertEqual(updater.installed_version(self.target), "1.8.3")
+        self.assertEqual(list(outside.iterdir()), [])
+
+    def test_cross_filesystem_workspace_preserves_old_installation(self):
+        workspace = updater.update_workspace(self.target)
+        original_stat = Path.stat
+
+        def other_device(path, *args, **kwargs):
+            result = original_stat(path, *args, **kwargs)
+            if path == workspace:
+                fields = list(result)
+                fields[2] += 1
+                return os.stat_result(fields)
+            return result
+
+        with patch.object(Path, "stat", other_device):
+            result, _ = self.sync()
+        self.assertEqual(result["status"], "unsupported_layout")
+        self.assertEqual(updater.installed_version(self.target), "1.8.3")
+        self.assertEqual(list(self.target.parent.rglob("SKILL.md")), [self.target / "SKILL.md"])
+
+    def test_first_install_uses_external_stage_and_retains_failed_readback_outside(self):
+        target = self.root / "new-host/skills/dcvlog"
+        original_match = updater.files_match
+        observed = []
+
+        def readback(root, hashes):
+            observed.append(Path(root))
+            if root == target:
+                return False
+            return original_match(root, hashes)
+
+        with patch.object(updater, "remote_revision", return_value=A), \
+                patch.object(updater, "download_archive", return_value=archive(package())), \
+                patch.object(updater, "files_match", side_effect=readback):
+            result = updater.ensure_latest(target, install=True)
+        self.assertEqual(result["status"], "verification_failed")
+        self.assertFalse(target.exists())
+        self.assertEqual(list(target.parent.rglob("SKILL.md")), [])
+        self.assertTrue(Path(result["failed_path"]).is_dir())
+        self.assertNotIn(target.parent, Path(result["failed_path"]).parents)
+        self.assertTrue(any(root.name.startswith(".dcvlog.install-") for root in observed))
+
+    def test_missing_polish_resource_rejects_release_without_mutating_install(self):
+        before = {path.relative_to(self.target): path.read_bytes()
+                  for path in self.target.rglob("*") if path.is_file()}
+        for name in TEXT_POLISH_FILES:
+            with self.subTest(missing=name):
+                files = package("2.5.0")
+                del files[name]
+                result, _ = self.sync(files)
+                self.assertEqual(result["status"], "invalid_release")
+                self.assertEqual({path.relative_to(self.target): path.read_bytes()
+                                  for path in self.target.rglob("*") if path.is_file()}, before)
 
     def test_next_launch_checks_revision_without_redownloading(self):
         self.sync()
@@ -198,7 +331,7 @@ class AutoUpdateTests(unittest.TestCase):
         result, _ = self.sync(revision=B)
         self.assertEqual(result["status"], "up_to_date")
         self.assertEqual(updater.load_state(self.target)["revision"], B)
-        self.assertEqual(len(list((self.root / ".installed.dcvlog-backups").iterdir())), 1)
+        self.assertEqual(len(list((updater.update_workspace(self.target) / "backups").iterdir())), 1)
 
     def test_resolves_actual_loaded_symlink_without_changing_global_copy(self):
         other = self.root / "global-copy"
@@ -232,7 +365,7 @@ class AutoUpdateTests(unittest.TestCase):
         self.assertEqual(result["status"], "unavailable")
         self.assertFalse(result["verified"])
         self.assertEqual((self.target / "SKILL.md").read_bytes(), original)
-        self.assertFalse((self.root / ".installed.dcvlog-update.lock").exists())
+        self.assertFalse((self.target.parent / ".installed.dcvlog-update.lock").exists())
 
     def test_read_only_check_verifies_release_without_changing_installation(self):
         before = {p.relative_to(self.root): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
@@ -363,7 +496,7 @@ class AutoUpdateTests(unittest.TestCase):
         self.assertEqual(updater.installed_version(self.target), "1.8.3")
 
     def test_existing_lock_is_not_deleted(self):
-        lock = self.root / ".installed.dcvlog-update.lock"
+        lock = self.target.parent / ".installed.dcvlog-update.lock"
         lock.write_text("existing lock")
         result, calls = self.sync()
         self.assertEqual(result["status"], "busy")
