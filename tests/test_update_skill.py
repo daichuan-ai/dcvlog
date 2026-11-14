@@ -118,7 +118,7 @@ class AutoUpdateTests(unittest.TestCase):
                                   for p in self.root.rglob("*") if p.is_dir()}, directories)
 
     def test_legacy_install_receives_story_and_opening_knowledge(self):
-        names = ('references/bridal-storycraft.md', 'references/bridal-opening.md', 'references/bridal-emotion.md', 'references/bridal-opening-patterns.md', 'tools/check_bridal_creative.py')
+        names = ('references/bridal-storycraft.md', 'references/bridal-opening.md', 'references/bridal-emotion.md', 'references/bridal-opening-patterns.md', 'tools/check_bridal_creative.py', 'references/appointment-workflow.md', 'references/runtime-maintenance.md')
         for name in names:
             (self.target / name).unlink()
         files = package('2.1.0', {name: (ROOT / 'skills/dcvlog' / name).read_bytes() for name in names})
@@ -130,7 +130,7 @@ class AutoUpdateTests(unittest.TestCase):
 
     def test_missing_writing_knowledge_rejects_release_and_preserves_old_skill(self):
         before = (self.target / 'SKILL.md').read_bytes()
-        for name in ('references/bridal-storycraft.md', 'references/bridal-opening.md', 'references/bridal-emotion.md', 'references/bridal-opening-patterns.md', 'tools/check_bridal_creative.py'):
+        for name in ('references/bridal-storycraft.md', 'references/bridal-opening.md', 'references/bridal-emotion.md', 'references/bridal-opening-patterns.md', 'tools/check_bridal_creative.py', 'references/appointment-workflow.md', 'references/runtime-maintenance.md'):
             with self.subTest(name=name):
                 files = package('2.1.0')
                 del files[name]
