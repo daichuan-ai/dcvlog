@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'skills/dcvlog'
 MODULE = SKILL / 'references/text-polish'
 SOURCE_HASHES = {
-    'index.md': '80568e20609dd185bee76b4819d9b376ac960818a762f9530e55d802960283e7',
-    'references/generation-workbench.md': 'a8f9b2a58e80fde3b06bc6bf76ce62689d3199a0610032335190386537bf45ab',
-    'references/language-methods.md': '03be9dbcd9d629df2149b07ff5105b5381d24dd18b5c00ed62357fa74a959e2d',
+    'index.md': '1d29d7766dc81c50304852aa0752b2359a27826f67b8b0d410e89d57b2691a48',
+    'references/generation-workbench.md': '154c8922a11289cff15d155613e5a94b7b1167cfc65291ebe08d3b32da09c818',
+    'references/language-methods.md': '04659cffe7c02701aa05ef3d28259c211c00f709f532e21c7e56d0bb0efd7e3a',
     'references/language-profile.md': 'f78a27a15e31f53ece0774e4e54bac40a797b435f5ce26587ae1be541925eb71',
     'references/source-calibration.md': '72695d664f55372077137563fd95b42463df22fd7c4853ffe01b2b79d1989570',
     'references/source-index.md': '5891cbd9bc6fb4415435b1aa758036df0ece00315a7bfed7e34b3d941befa744',
