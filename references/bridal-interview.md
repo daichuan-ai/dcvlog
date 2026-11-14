@@ -18,11 +18,11 @@
 
 形成简短 `story_brief`：`event`（具体事情/处境）、`author_point`（作者想说的意思）、`audience`（谁为什么会在意）。它用于指导选材，不是逐段台词表，不预先规定感受句和结尾。后续可在用户已选方向内调整这份简报。
 
-## 3. 整理资料，再进入真实 DB 整篇创作
+## 3. 资料底稿、作者讲述、真实 DB 改稿
 
 保留按时间整理的全旁白 `rough_draft`，主要删减、归纳学员语料；它是可查事实的底稿，不是最终段落骨架。展示可简短，不新增批准步骤。实际已确认的语料、画面、作者原有观点和未知一并保留。
 
-读取并执行 [DB交接](bridal-db-handoff.md)。先让真实 DB 从作者最想说的意思出发，选择材料组织完整口语稿，再做衔接检查及必要修改。可大幅取舍、重排和重写，不必用上全日画面。创作权限与整篇审读只以 `bridal-storycraft.md` 为准，不再执行旧的逐段感受配额。
+接着按 `bridal-storycraft.md` 写完整 `author_draft`：像化妆师本人向朋友讲述，从自己想说的意思出发选材料，可大幅取舍、重排和重写，不必用上全日画面。审读这篇作者讲述后，读取并实际执行 [DB交接](bridal-db-handoff.md)，取得DB检查修改后的完整中稿。资料底稿、作者创作和DB修改各自完成，不能跳过作者讲述而让DB润色流水账。创作权限集中在故事创作文件，不再执行旧的逐段感受配额。
 
 ## 4. 展示中稿与补充
 
@@ -36,7 +36,7 @@
 
 所选开头进入完整全文，删重复、改接入段并按需要调整正文。对最终全文再做一次整篇审读，再给连续旁白和逐段声画提示。作者视角清楚即可，不强制每段感受、固定结尾或字数。
 
-从粗稿开始在当前任务私有目录维护 `creative-work.json`：`schema_version:2`、事实/画面及用户选择、`story_brief`、`rough_draft`、`body_draft`、真实 `db_execution`、`opening_candidates`、`opening_choice`、`assembled.script` 和最终 `reader_review`。检查工具只核对这些交接及稿件版本，不评分文笔：
+从粗稿开始在当前任务私有目录维护 `creative-work.json`：`schema_version:2`、事实/画面及用户选择、`story_brief`、`rough_draft`、`author_draft`、`body_draft`、真实 `db_execution`、`opening_candidates`、`opening_choice`、`assembled.script` 和最终 `reader_review`。检查工具只核对这些交接及稿件版本，不评分文笔：
 
 ```bash
 python3 "<实际加载目录>/tools/check_bridal_creative.py" "<当前任务目录>/creative-work.json"
