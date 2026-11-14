@@ -3,14 +3,14 @@
   "owner": { "name": "代川" },
   "metadata": {
     "description": "代川的化妆师内容 Skill",
-    "version": "2.5.1"
+    "version": "2.5.2"
   },
   "plugins": [
     {
       "name": "dcvlog",
       "source": "./",
       "strict": true,
-      "version": "2.5.1",
+      "version": "2.5.2",
       "description": "代川的化妆师内容 Skill：/DCVlog 选择约妆旁白、新娘跟妆旁白、化妆师真实表达或通用文字润色。"
     }
   ]

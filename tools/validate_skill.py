@@ -20,7 +20,7 @@ for rel in ['skills/dcvlog/tools/update_skill.py','skills/dcvlog/tools/telemetry
                'direction-comparison.md', 'rough-draft.md']]]:
     if not (root/rel).exists():
         errors.append(f'missing telemetry file {rel}')
-for token in ['name: dcvlog','version: "2.5.1"','author: "daichuan-ai"','/dcvlog','/DCVlog','约妆 Vlog 旁白','新娘跟妆 Vlog 旁白','bridal-interview.md','bridal-db-handoff.md','bridal-storycraft.md','更新 DCVlog','加入 DCVlog 新案例库','扫描新案例库，升级当前方法','场景 / 用途','成熟样本','service_client_total','video_client_total','第1个讲故事','40秒','aesthetic-interview.md','visual-result-draft-gate.md','post-makeup-commentary.md','version-check.md','review-collection.md','review_upload.py','首次同意','tools/check_update.py','静默查新','batch-003-raw-20261016','代川来陪你把今天这条捋出来','corpus/corpus-index.md','corpus/current-patterns.md','dcvlog_open','write_vlog_start','write_vlog_complete','匿名使用统计','NEED_ASK','READY','LIMITED_DRAFT']:
+for token in ['name: dcvlog','version: "2.5.2"','author: "daichuan-ai"','/dcvlog','/DCVlog','约妆 Vlog 旁白','新娘跟妆 Vlog 旁白','bridal-interview.md','bridal-db-handoff.md','bridal-storycraft.md','更新 DCVlog','加入 DCVlog 新案例库','扫描新案例库，升级当前方法','场景 / 用途','成熟样本','service_client_total','video_client_total','第1个讲故事','40秒','aesthetic-interview.md','visual-result-draft-gate.md','post-makeup-commentary.md','version-check.md','review-collection.md','review_upload.py','首次同意','tools/check_update.py','静默查新','batch-003-raw-20261016','代川来陪你把今天这条捋出来','corpus/corpus-index.md','corpus/current-patterns.md','dcvlog_open','write_vlog_start','write_vlog_complete','匿名使用统计','NEED_ASK','READY','LIMITED_DRAFT']:
     if token not in text:
         errors.append(f'missing {token}')
 # 累计12个运行参考；V1.8.6原有11个文件必须全部保留
@@ -88,10 +88,10 @@ for label, body, tokens in [
     for token in tokens:
         if token not in body:
             errors.append(f'{label} missing regression guard {token}')
-if (root/'VERSION').read_text(encoding='utf-8').strip() != '2.5.1':
-    errors.append('root VERSION != 2.5.1')
+if (root/'VERSION').read_text(encoding='utf-8').strip() != '2.5.2':
+    errors.append('root VERSION != 2.5.2')
 config=(skill.parent/'telemetry-config.json').read_text(encoding='utf-8')
-for token in ['"skill_version": "2.5.1"','"corpus_version": "1.2.0"']:
+for token in ['"skill_version": "2.5.2"','"corpus_version": "1.2.0"']:
     if token not in config:
         errors.append(f'telemetry config missing {token}')
 if not (skill.parent/'tools'/'check_update.py').is_file():
@@ -117,6 +117,6 @@ if errors:
 print('PASS')
 print(f'top_level_references={len(actual)}')
 print(f'raw_cases={count}')
-print('version=2.5.1')
+print('version=2.5.2')
 print('corpus_version=1.2.0')
 print('raw_sha256='+hashlib.sha256(raw.read_bytes()).hexdigest())
