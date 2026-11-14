@@ -15,6 +15,7 @@ def record():
         'schema_version': 2,
         'rough_draft': '她换了鞋，穿着走了。',
         'story_brief': {'event': '换鞋', 'author_point': '在意舒服', 'audience': '在好看与舒服间选择的人'},
+        'author_draft': script,
         'body_draft': script,
         'db_execution': {'source': 'fixture', 'modules': ['creator', 'flow']},
         'opening_candidates': [
@@ -40,6 +41,10 @@ class CreativeGateTests(unittest.TestCase):
     def test_missing_source_does_not_claim_db_success(self):
         r = record(); del r['db_execution']
         self.assertEqual(gate.check(r)['return_to'], 'DB_EXECUTION')
+
+    def test_missing_author_creation_cannot_skip_to_db(self):
+        r = record(); del r['author_draft']
+        self.assertEqual(gate.check(r)['return_to'], 'AUTHOR_DRAFT')
 
     def test_missing_actual_body_cannot_pass(self):
         r = record(); r['body_draft'] = ''
