@@ -1,6 +1,6 @@
 {
   "name": "dcvlog",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "代川的化妆师内容 Skill：/DCVlog 选择约妆旁白、新娘跟妆旁白、化妆师真实表达或通用文字润色。",
   "author": { "name": "代川" },
   "skills": ["./skills/dcvlog"]
