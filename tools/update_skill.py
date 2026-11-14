@@ -56,6 +56,11 @@ REQUIRED = (
     "references/self-expression/material-memory.md",
     "references/self-expression/direction-comparison.md",
     "references/self-expression/rough-draft.md",
+    "references/text-polish/index.md",
+    "references/text-polish/references/language-methods.md",
+    "references/text-polish/references/generation-workbench.md",
+    "references/text-polish/references/language-profile.md",
+    "references/text-polish/references/source-index.md",
     "tools/check_bridal_creative.py",
     "tools/prepare_bridal_db.py", "tools/retire_features.py",
 )
@@ -339,8 +344,49 @@ def update_lock(target):
         path.unlink(missing_ok=True)
 
 
+def skill_scan_root(target):
+    """Keep recoverable copies outside recursive host Skill discovery."""
+    roots = [parent for parent in target.parents
+             if parent.name.lower() in {"skills", ".skills", ".user_skills"}]
+    return roots[-1] if roots else target.parent
+
+
+def download_parent(target):
+    # Read-only checks also use scratch space outside the install tree, without
+    # creating permanent cache directories or requiring write access to it.
+    scan_root = skill_scan_root(target)
+    directory = Path(tempfile.gettempdir()).resolve()
+    if directory == scan_root or scan_root in directory.parents:
+        directory = scan_root.parent
+    if directory == scan_root:
+        raise UpdateError("unsafe_path", "No scratch directory outside Skill discovery")
+    return directory
+
+
+def update_workspace(target):
+    # A hidden name alone is insufficient: WorkBuddy discovers hidden SKILL.md
+    # files too. Use a sibling of the outer Skill root, not a child of it.
+    scan_root = skill_scan_root(target)
+    if scan_root == scan_root.parent:
+        raise UpdateError("unsafe_path", "Cannot isolate update files from Skill discovery")
+    base = scan_root.parent / ".dcvlog-update-data"
+    key = hashlib.sha256(str(target).encode("utf-8")).hexdigest()[:20]
+    directory = base / key
+    for path in (base, directory):
+        if path.is_symlink():
+            raise UpdateError("unsafe_path", "Update workspace is a symbolic link")
+        path.mkdir(mode=0o700, exist_ok=True)
+    # Never turn a cross-volume rename into a copy/delete operation. The live
+    # installation must remain intact when its external workspace is unsuitable.
+    device = directory.stat().st_dev
+    if target.parent.stat().st_dev != device or (target.exists() and target.stat().st_dev != device):
+        raise UpdateError("unsupported_layout", "Atomic update needs an external workspace on the same filesystem")
+    return directory
+
+
 def install_package(target, candidate, revision, version, hashes, previous):
-    stage = Path(tempfile.mkdtemp(prefix="." + target.name + ".update-", dir=target.parent))
+    workspace = update_workspace(target)
+    stage = Path(tempfile.mkdtemp(prefix="." + target.name + ".update-", dir=workspace))
     backup = None
     try:
         # Preserve local additions; never touch ~/.dcvlog or another installation.
@@ -360,10 +406,10 @@ def install_package(target, candidate, revision, version, hashes, previous):
         save_state(stage, revision, version, hashes)
         if not files_match(stage, hashes):
             raise UpdateError("invalid_release", "Staged package verification failed")
-        backups = target.parent / ("." + target.name + ".dcvlog-backups")
+        backups = workspace / "backups"
         if backups.is_symlink():
             raise UpdateError("unsafe_path", "Backup directory is a symbolic link")
-        backups.mkdir(exist_ok=True)
+        backups.mkdir(mode=0o700, exist_ok=True)
         stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         backup = backups / (stamp + "-" + uuid.uuid4().hex[:8])
         os.replace(target, backup)
@@ -397,7 +443,7 @@ def _sync(target, check_only):
     retired_present = any(safe_path(target, name).exists() for name in RETIRED)
     if state and state["revision"] == revision and files_match(target, state["files"]) and not retired_present:
         return dict(common, status="up_to_date", verified=True, latest_version=version)
-    with tempfile.TemporaryDirectory(prefix=".dcvlog-download-", dir=target.parent) as directory:
+    with tempfile.TemporaryDirectory(prefix=".dcvlog-download-", dir=download_parent(target)) as directory:
         candidate = Path(directory)
         hashes = unpack_package(cached_archive if cached_archive is not None else download_archive(revision), candidate)
         latest = validate_package(candidate, hashes)
@@ -419,7 +465,7 @@ def install_new(target):
     """Install a validated release into an explicitly selected, absent directory."""
     revision, cached_archive = latest_release()
     # Download and validate before creating anything in the host's skill directory.
-    with tempfile.TemporaryDirectory(prefix=".dcvlog-first-install-") as directory:
+    with tempfile.TemporaryDirectory(prefix=".dcvlog-first-install-", dir=download_parent(target)) as directory:
         candidate = Path(directory)
         hashes = unpack_package(cached_archive if cached_archive is not None else download_archive(revision), candidate)
         version = validate_package(candidate, hashes)
@@ -427,7 +473,8 @@ def install_new(target):
         with update_lock(target):
             if target.exists() or target.is_symlink():
                 raise UpdateError("busy", "Installation target appeared; retry against the existing Skill")
-            stage = Path(tempfile.mkdtemp(prefix="." + target.name + ".install-", dir=target.parent))
+            workspace = update_workspace(target)
+            stage = Path(tempfile.mkdtemp(prefix="." + target.name + ".install-", dir=workspace))
             try:
                 shutil.copytree(candidate, stage, dirs_exist_ok=True)
                 save_state(stage, revision, version, hashes)
@@ -436,7 +483,7 @@ def install_new(target):
                 os.rename(stage, target)
                 if not files_match(target, hashes) or installed_version(target) != version:
                     # Retain the failed files without leaving an active incomplete Skill.
-                    failed = target.parent / ("." + target.name + ".failed-" + uuid.uuid4().hex)
+                    failed = workspace / ("failed-" + uuid.uuid4().hex)
                     os.rename(target, failed)
                     raise UpdateError("verification_failed", "Installed package verification failed", failed_path=str(failed))
             finally:
