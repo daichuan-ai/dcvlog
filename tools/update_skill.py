@@ -61,6 +61,7 @@ REQUIRED = (
     "references/text-polish/references/generation-workbench.md",
     "references/text-polish/references/language-profile.md",
     "references/text-polish/references/source-index.md",
+    "references/text-polish/references/source-calibration.md",
     "tools/check_bridal_creative.py",
     "tools/prepare_bridal_db.py", "tools/retire_features.py",
 )
