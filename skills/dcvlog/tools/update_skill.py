@@ -46,6 +46,7 @@ REQUIRED = (
     "references/corpus/batch-002-new/B002-002.md",
     "references/corpus/batch-002-new/B002-003.md",
     RAW_CASE,
+    "references/appointment-workflow.md", "references/runtime-maintenance.md",
     "references/bridal-interview.md", "references/bridal-factors.md",
     "references/bridal-db-handoff.md", "references/bridal-delivery.md",
     "references/bridal-storycraft.md", "references/bridal-opening.md",
