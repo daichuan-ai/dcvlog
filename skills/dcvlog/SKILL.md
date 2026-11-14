@@ -6,7 +6,7 @@ description: "代川 DCVlog：/DCVlog 启动后选择1约妆Vlog旁白、2新娘
 description_zh: "代川 DCVlog｜1约妆旁白；2新娘跟妆旁白；3化妆师真实表达；4通用文字润色。"
 description_en: "Use /DCVlog to choose appointment narration, bridal narration with DB revision and editing guidance, or makeup-artist self-expression through interviews, direction comparison and an editable spoken draft, or general-purpose Chinese sentence polishing."
 category: writing
-version: "2.5.0"
+version: "2.5.1"
 author: "daichuan-ai"
 disable-model-invocation: false
 user-invocable: true
@@ -46,7 +46,7 @@ python3 "<实际加载目录>/tools/update_skill.py" --skill-dir "<实际加载�
 - **2 新娘跟妆**：读取 `@references/bridal-interview.md`，按阶段读取故事创作、真实 DB 交接、开头与声画交付。不要加载约妆菜单、范本、客人数闸门或收稿流程；不上传采访与稿件。不会表达的学员可以由 AI 代创作者感受，权限集中在故事创作文件。
 - **3 化妆师真实表达**：读取 `@references/self-expression/index.md`，访谈前读 `references/self-expression/interview-branches.md`，记录时读 `references/self-expression/material-memory.md`，比较前读 `references/self-expression/direction-comparison.md`，起草前读 `references/self-expression/rough-draft.md`。保持多线访谈、本人选择及可修改初稿；不自动加载约妆或新娘 DB，不继承新娘的代创感受权限，不上传素材或调用约妆收稿接口。
 
-- **4 通用文字润色**：完整读取 `@references/text-polish/index.md`，按其中指引实际读取改写示例与相关方法卡。模块相对链接以 `references/text-polish/` 为起点，例如示例位于 `references/text-polish/references/generation-workbench.md`。已有原文就直接处理；未提供时只提示“把要润色的原文发给我就行。”沿用本人指定的力度和语气，默认交付一版完整可用稿。重点增强遣词造句、隐喻、联想、词义呼应和自然表达，保留事实、数字、条件与作者声音，不主动重设计文章结构；只纠错等局部要求按用户范围执行。本项无需化妆师身份、服务采访、开头结尾选择或DB，使用当前宿主模型，不另配API、不切换模型；不上传原文和成稿、不调用约妆收稿接口或写稿统计。
+- **4 通用文字润色**：完整读取 `@references/text-polish/index.md`，按其中指引，理解原稿后只读取当前表达问题需要的方法、示例与原作校准。模块相对链接以 `references/text-polish/` 为起点，例如示例位于 `references/text-polish/references/generation-workbench.md`。已有原文就直接处理；未提供时只提示“把要润色的原文发给我就行。”沿用本人指定的力度和语气，默认交付一版完整可用稿。先理解原意，再改善字词与相邻句的表达，也可把围绕同一意思的长句炼成短句；有实际收益才采用，原句合适就保留。保留事实、数字、条件与作者声音，不主动重设计文章结构；只纠错等局部要求按用户范围执行。本项无需化妆师身份、服务采访、开头结尾选择或DB，使用当前宿主模型，不另配API、不切换模型；不上传原文和成稿、不调用约妆收稿接口或写稿统计。
 
 明确说“用文字科学润色”或“用通用润色处理刚才这版”时，读取第四项模块处理现有稿件，不重复索取已有正文；普通修改请求仍按原分支继续。前三项不自动增加一道强制润色。
 

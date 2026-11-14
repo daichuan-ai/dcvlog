@@ -22,6 +22,7 @@ TEXT_POLISH_FILES = (
     "references/text-polish/references/generation-workbench.md",
     "references/text-polish/references/language-profile.md",
     "references/text-polish/references/source-index.md",
+    "references/text-polish/references/source-calibration.md",
 )
 SELF_EXPRESSION_FILES = (
     "references/self-expression/index.md",
@@ -303,7 +304,7 @@ class AutoUpdateTests(unittest.TestCase):
                   for path in self.target.rglob("*") if path.is_file()}
         for name in TEXT_POLISH_FILES:
             with self.subTest(missing=name):
-                files = package("2.5.0")
+                files = package("2.5.1")
                 del files[name]
                 result, _ = self.sync(files)
                 self.assertEqual(result["status"], "invalid_release")
