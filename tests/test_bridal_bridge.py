@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -78,6 +79,34 @@ class DBPreparationTests(unittest.TestCase):
         with patch.object(db, 'get', side_effect=[json.dumps(tree).encode(), b'bad']):
             with self.assertRaisesRegex(ValueError, 'verification failed'):
                 db.fetch_modules(['dbs-script-flow'])
+
+
+class DBTransportTests(unittest.TestCase):
+    def test_timeout_uses_verified_fallback_and_reuses_transport(self):
+        url = 'https://api.github.com/repos/dontbesilent2025/dbskill/git/trees/main'
+        with patch.object(db, '_prefer_curl', False), patch.object(db.urllib.request, 'urlopen', side_effect=TimeoutError), patch.object(db, 'curl_get', return_value=b'ok') as fallback:
+            self.assertEqual(db.get(url), b'ok')
+            self.assertTrue(db._prefer_curl)
+            self.assertEqual(db.get(url), b'ok')
+            self.assertEqual(fallback.call_count, 2)
+
+    def test_fallback_enforces_destination_and_size(self):
+        for output, message in [(b'ok\nhttps://example.org/file', 'destination'),
+                                (b'too-long\nhttps://raw.githubusercontent.com/file', 'size limit')]:
+            with patch.object(db.shutil, 'which', return_value='/usr/bin/curl'), patch.object(db.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout=output)):
+                with self.assertRaisesRegex(ValueError, message):
+                    db.curl_get('https://raw.githubusercontent.com/file', 2)
+
+    def test_no_fallback_does_not_claim_preparation(self):
+        with patch.object(db, '_prefer_curl', False), patch.object(db.urllib.request, 'urlopen', side_effect=TimeoutError), patch.object(db.shutil, 'which', return_value=None):
+            with self.assertRaisesRegex(OSError, 'unavailable'):
+                db.get('https://api.github.com/tree')
+
+    def test_nonofficial_initial_url_never_reaches_network(self):
+        with patch.object(db.urllib.request, 'urlopen') as request:
+            with self.assertRaisesRegex(ValueError, 'destination'):
+                db.get('http://example.org/tree')
+            request.assert_not_called()
 
 
 class RetirementTests(unittest.TestCase):
