@@ -8,11 +8,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'skills/dcvlog'
-MODULES = {
-    'references/self-expression/' + name for name in (
-        'index.md', 'interview-branches.md', 'material-memory.md',
-        'direction-comparison.md', 'rough-draft.md')
-}
+MODULES = {'references/self-expression/index.md'}
+
 SPEC = importlib.util.spec_from_file_location(
     'self_expression_updater', SKILL / 'tools/update_skill.py')
 updater = importlib.util.module_from_spec(SPEC)

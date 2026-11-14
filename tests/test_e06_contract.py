@@ -10,8 +10,8 @@ class TestE06(unittest.TestCase):
   for key in ['强画面','强情绪','强数字','纯文案','只发第1位','只发第2位','人物印象','自然结束','不再追问','完整连续旁白']:
    self.assertIn(key,s)
  def test_version(self):
-  self.assertEqual((R/'VERSION').read_text().strip(),'2.5.2')
-  self.assertIn('version: "2.5.2"',(R/'skills/dcvlog/SKILL.md').read_text())
+  self.assertEqual((R/'VERSION').read_text().strip(),'2.5.3')
+  self.assertIn('version: "2.5.3"',(R/'skills/dcvlog/SKILL.md').read_text())
  def test_only_appointment_branch_uses_e06(self):
   s=(R/'skills/dcvlog/references/e06-writing-refinement.md').read_text()
   self.assertIn('首屏选2或3不执行本文件',s)
