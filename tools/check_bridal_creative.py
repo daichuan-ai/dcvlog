@@ -28,6 +28,8 @@ def check(record):
     brief = record.get('story_brief')
     if not isinstance(brief, dict) or not all(text(brief.get(k)) for k in ('event', 'author_point', 'audience')):
         return fail('STORY_BRIEF', '从现有材料与用户选择形成事情、作者表达和观众简报')
+    if not text(record.get('author_draft')):
+        return fail('AUTHOR_DRAFT', '缺少作者口语创作稿；先从事实写成讲述，再交DB改稿')
     if not text(record.get('body_draft')):
         return fail('BODY_DRAFT', '缺少完整创作稿')
     db = record.get('db_execution')
