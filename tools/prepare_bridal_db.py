@@ -1,6 +1,6 @@
 """Locate or temporarily fetch original DB modules. Preparation is NOT execution.
 
-Stdlib only. No prompts, credentials, uploads, installation or script execution.
+Python stdlib with an optional system curl fallback. No credentials, uploads or installation.
 """
 import argparse
 from concurrent.futures import ThreadPoolExecutor
@@ -8,8 +8,11 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
+import shutil
+import subprocess
 import tempfile
 import urllib.request
+import urllib.error
 from urllib.parse import urlparse
 
 REPO = 'dontbesilent2025/dbskill'
@@ -19,15 +22,54 @@ HOSTS = {'api.github.com', 'raw.githubusercontent.com', 'github.com'}
 LIMIT = 2 * 1024 * 1024
 
 
+_prefer_curl = False
+
+
+def checked_response(url, data, limit):
+    dest = urlparse(url)
+    if dest.scheme != 'https' or dest.hostname not in HOSTS:
+        raise ValueError('Unexpected source destination')
+    if len(data) > limit:
+        raise ValueError('Source exceeds size limit')
+    return data
+
+
+def curl_get(url, limit):
+    executable = shutil.which('curl')
+    if not executable:
+        raise OSError('Python source download failed and curl is unavailable')
+    try:
+        result = subprocess.run(
+            [executable, '--fail', '--silent', '--show-error', '--location',
+             '--max-redirs', '4', '--proto', '=https', '--proto-redir', '=https',
+             '--max-time', '20', '--max-filesize', str(limit + 1),
+             '--user-agent', 'DCVlog-DB-Loader', '--write-out', '\n%{url_effective}', url],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=25, check=False)
+    except subprocess.TimeoutExpired as exc:
+        raise OSError('Official source download timed out') from exc
+    if result.returncode:
+        raise OSError('Official source download failed')
+    data, sep, effective = result.stdout.rpartition(b'\n')
+    if not sep:
+        raise ValueError('Missing source destination verification')
+    return checked_response(effective.decode('utf-8'), data, limit)
+
+
 def get(url, limit=LIMIT):
+    global _prefer_curl
+    checked_response(url, b'', limit)
+    if _prefer_curl:
+        return curl_get(url, limit)
     request = urllib.request.Request(url, headers={'User-Agent': 'DCVlog-DB-Loader'})
-    with urllib.request.urlopen(request, timeout=15) as response:
-        dest = urlparse(response.geturl())
-        if dest.scheme != 'https' or dest.hostname not in HOSTS:
-            raise ValueError('Unexpected source destination')
-        data = response.read(limit + 1)
-        if len(data) > limit:
-            raise ValueError('Source exceeds size limit')
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            return checked_response(response.geturl(), response.read(limit + 1), limit)
+    except urllib.error.HTTPError:
+        raise
+    except (urllib.error.URLError, TimeoutError):
+        data = curl_get(url, limit)
+        # Reuse the working transport for this preparation only. No system changes.
+        _prefer_curl = True
         return data
 
 

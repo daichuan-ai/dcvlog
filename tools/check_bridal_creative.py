@@ -1,5 +1,6 @@
-"""Check local creative-stage artifacts; never claims to judge writing quality."""
+"""Validate handoff artifacts and review freshness, never prose quality."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -13,77 +14,66 @@ def compact(value):
     return re.sub(r"\s+", "", value)
 
 
+def script_hash(script):
+    return hashlib.sha256(script.encode('utf-8')).hexdigest()
+
+
 def check(record):
     def fail(stage, reason):
-        return {"ready": False, "return_to": stage, "reason": reason,
-                "scope": "artifact_integrity_only"}
+        return {'ready': False, 'return_to': stage, 'reason': reason,
+                'scope': 'artifact_integrity_only', 'writing_quality_verified': False}
 
-    if not isinstance(record, dict) or not text(record.get("rough_draft")):
-        return fail("ROUGH_DRAFT", "缺少完整事实粗稿")
-    plan = record.get("emotion_plan", {})
-    if not isinstance(plan, dict) or not all(text(plan.get(k)) for k in ("center_judgment", "audience", "ending_response")):
-        return fail("EMOTION_PLAN", "缺少中心判断、共鸣人群或作者结尾回应")
-    progression = plan.get("progression", [])
-    if not isinstance(progression, list) or not progression or not all(
-            isinstance(p, dict) and all(text(p.get(k)) for k in ("fact", "response", "serves_center")) for p in progression):
-        return fail("EMOTION_PLAN", "缺少事实到感受再到中心的推进记录")
-    if not text(record.get("body_draft")):
-        return fail("BODY_DRAFT", "缺少DB实际创作的正文")
-    brief = record.get("opening_brief", {})
-    if not isinstance(brief, dict) or not all(text(brief.get(k)) for k in ("core_judgment", "audience", "tension", "viewer_question")) or not isinstance(brief.get("fact_anchors"), list) or not brief["fact_anchors"] or not all(text(p) for p in brief["fact_anchors"]):
-        return fail("OPENING_BRIEF", "缺少独立开头创作简报")
-    candidates = record.get("opening_candidates", [])
-    keys = ("id", "mechanism", "hook", "next_line", "first_shot", "reason")
+    if not isinstance(record, dict) or not text(record.get('rough_draft')):
+        return fail('ROUGH_DRAFT', '缺少事实底稿；复用原采访，不重新提问')
+    brief = record.get('story_brief')
+    if not isinstance(brief, dict) or not all(text(brief.get(k)) for k in ('event', 'author_point', 'audience')):
+        return fail('STORY_BRIEF', '从现有材料与用户选择形成事情、作者表达和观众简报')
+    if not text(record.get('author_draft')):
+        return fail('AUTHOR_DRAFT', '缺少作者口语创作稿；先从事实写成讲述，再交DB改稿')
+    if not text(record.get('body_draft')):
+        return fail('BODY_DRAFT', '缺少完整创作稿')
+    db = record.get('db_execution')
+    if not isinstance(db, dict) or not text(db.get('source')) or not isinstance(db.get('modules'), list) or not db['modules'] or not all(text(m) for m in db['modules']):
+        return fail('DB_EXECUTION', '缺少DB来源与模块记录；字段存在不证明已经真实执行')
+    candidates = record.get('opening_candidates')
+    keys = ('id', 'mechanism', 'hook', 'next_line', 'first_shot', 'reason')
     if not isinstance(candidates, list) or len(candidates) < 2 or not all(
             isinstance(c, dict) and all(text(c.get(k)) for k in keys) for c in candidates):
-        return fail("OPENING_CANDIDATES", "至少两个有范式、开头、承接句与画面的候选")
-    if len({c["id"] for c in candidates}) != len(candidates) or len({c["mechanism"] for c in candidates}) < 2 or len({compact(c["hook"]) for c in candidates}) != len(candidates):
-        return fail("OPENING_CANDIDATES", "候选编号、范式或开头没有形成不同选择")
-    selected = next((c for c in candidates if c["id"] == record.get("opening_choice")), None)
-    if not selected:
-        return fail("OPENING_CHOICE", "尚无有效的用户开头选择或已授权代选")
-    assembled = record.get("assembled", {})
-    if not isinstance(assembled, dict) or not text(assembled.get("script")):
-        return fail("ASSEMBLED", "缺少装入所选开头的完整稿")
-    script = assembled["script"]
-    if not compact(script).startswith(compact(selected["hook"] + selected["next_line"])):
-        return fail("ASSEMBLED", "完整稿未从所选开头和承接句开始")
-    evidence = assembled.get("emotion_evidence", [])
-    if not isinstance(evidence, list) or not evidence or not all(text(q) and q in script for q in evidence):
-        return fail("BODY_DRAFT", "作者感受摘句缺失或不在实际全文中")
-    ending = assembled.get("ending_response")
-    if not text(ending) or not script.rstrip().endswith(ending.strip()):
-        return fail("EMOTION_PLAN", "结尾没有实际装入作者情感回应")
-    review = assembled.get("emotion_review", {})
-    if not isinstance(review, dict) or not text(review.get("author_position")) or review.get("ending_feeling") != ending:
-        return fail("BODY_DRAFT", "缺少最终全文的作者感受复核与结尾摘句")
-    beats = review.get("beats", [])
-    if not isinstance(beats, list) or not beats:
-        return fail("BODY_DRAFT", "缺少事实与作者感受的逐节点对照")
-    for beat in beats:
-        if not isinstance(beat, dict) or not all(text(beat.get(k)) for k in ("fact_excerpt", "feeling_excerpt", "adds")):
-            return fail("BODY_DRAFT", "感受复核需实际事实摘句、感受摘句及新增态度说明")
-        if beat["fact_excerpt"] not in script or beat["feeling_excerpt"] not in script or compact(beat["fact_excerpt"]) == compact(beat["feeling_excerpt"]):
-            return fail("BODY_DRAFT", "感受复核摘句须在实际全文中，不能用同一句事实充当感受")
-    promise = assembled.get("promise_evidence")
-    if not text(promise) or promise not in script:
-        return fail("ASSEMBLED", "缺少开头承诺在正文中的实际承接摘句")
-    return {"ready": True, "return_to": None, "scope": "artifact_integrity_only",
-            "writing_quality_verified": False}
+        return fail('OPENING_CANDIDATES', '缺少可比较的开头、接入句和已有首画面')
+    if len({c['id'] for c in candidates}) != len(candidates) or len({c['mechanism'] for c in candidates}) < 2 or len({compact(c['hook']) for c in candidates}) != len(candidates):
+        return fail('OPENING_CANDIDATES', '候选编号、机制或开头重复')
+    selected = next((c for c in candidates if c['id'] == record.get('opening_choice')), None)
+    if selected is None:
+        return fail('OPENING_CHOICE', '缺少有效选择；等待用户或使用已有代选授权')
+    assembled = record.get('assembled')
+    if not isinstance(assembled, dict) or not text(assembled.get('script')):
+        return fail('ASSEMBLED', '缺少装入所选开头的完整稿')
+    script = assembled['script']
+    if not compact(script).startswith(compact(selected['hook'] + selected['next_line'])):
+        return fail('ASSEMBLED', '所选开头和承接句尚未进入完整稿')
+    review = record.get('reader_review')
+    if not isinstance(review, dict) or not all(text(review.get(k)) for k in ('takeaway', 'note', 'script_sha256')) or review.get('decision') not in ('pass', 'revise'):
+        return fail('READER_REVIEW', '缺少对实际全文的整篇审读记录')
+    if review['script_sha256'] != script_hash(script):
+        return fail('READER_REVIEW', '审读对应旧稿；对当前全文审读并更新摘要')
+    if review['decision'] == 'revise':
+        return fail('BODY_DRAFT', '整篇审读发现待修问题，返回实际创作')
+    return {'ready': True, 'return_to': None, 'scope': 'artifact_integrity_only',
+            'writing_quality_verified': False, 'db_execution_verified': False}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("record", type=Path)
+    parser.add_argument('record', type=Path)
     args = parser.parse_args()
     try:
-        result = check(json.loads(args.record.read_text(encoding="utf-8")))
+        result = check(json.loads(args.record.read_text(encoding='utf-8')))
     except (OSError, ValueError) as exc:
-        result = {"ready": False, "return_to": "RECORD", "reason": str(exc),
-                  "scope": "artifact_integrity_only"}
+        result = {'ready': False, 'return_to': 'RECORD', 'reason': str(exc),
+                  'scope': 'artifact_integrity_only', 'writing_quality_verified': False}
     print(json.dumps(result, ensure_ascii=False))
-    return 0 if result["ready"] else 2
+    return 0 if result['ready'] else 2
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())
