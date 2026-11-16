@@ -13,11 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'skills/dcvlog'
 MODULE = SKILL / 'references/text-polish'
 SOURCE_HASHES = {
-    'index.md': '1d29d7766dc81c50304852aa0752b2359a27826f67b8b0d410e89d57b2691a48',
+    'index.md': '8ac402f5e8c031d32a5c5aeaf47002b54cfa6f810a30a15ea109ebf9dc72d4df',
     'references/generation-workbench.md': '154c8922a11289cff15d155613e5a94b7b1167cfc65291ebe08d3b32da09c818',
     'references/language-methods.md': '04659cffe7c02701aa05ef3d28259c211c00f709f532e21c7e56d0bb0efd7e3a',
     'references/language-profile.md': 'f78a27a15e31f53ece0774e4e54bac40a797b435f5ce26587ae1be541925eb71',
-    'references/source-calibration.md': '72695d664f55372077137563fd95b42463df22fd7c4853ffe01b2b79d1989570',
+    'references/source-calibration.md': 'eaed872e2624badd046ba56529e3b71077bdcce2a1352992a60db73c0b8a6f87',
     'references/source-index.md': '5891cbd9bc6fb4415435b1aa758036df0ece00315a7bfed7e34b3d941befa744',
 }
 
