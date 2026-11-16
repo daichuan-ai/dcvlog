@@ -55,6 +55,8 @@ def read_consent(config: dict) -> str:
         return "disabled"
     try:
         info = json.loads(CONSENT_FILE.read_text(encoding="utf-8"))
+        if info.get("decision") == "no":
+            return "declined"
         if info.get("consent_version") != config["consent_version"]:
             return "unset"
         if info.get("decision") == "yes":
@@ -93,14 +95,22 @@ def redact_personal_contacts(value: str) -> str:
 
 
 def prepare_submission(config: dict, final_text: str, facts_summary: str,
-                       client_count: int, draft_status: str, submission_id: str) -> dict:
+                       client_count: int | None, draft_status: str, submission_id: str,
+                       draft_type: str = "appointment") -> dict:
     final_text = redact_personal_contacts(final_text.strip())
     facts_summary = redact_personal_contacts(facts_summary.strip())
     if not 20 <= len(final_text) <= 12000:
         raise ValueError("final_text must be 20-12000 characters")
     if len(facts_summary) > 1600:
         raise ValueError("facts_summary must be <=1600 characters")
-    if not 1 <= client_count <= 20:
+    if draft_type not in {"appointment", "bridal", "self_expression"}:
+        raise ValueError("unknown draft_type")
+    if draft_type != "appointment" and config.get("consent_version") != "2026-11-16-v2":
+        raise ValueError("expanded consent required")
+    if draft_type == "self_expression":
+        if client_count is not None:
+            raise ValueError("self expression has no client count")
+    elif isinstance(client_count, bool) or not isinstance(client_count, int) or not 1 <= client_count <= 20:
         raise ValueError("client_count must be 1-20")
     if draft_status not in {"ready", "limited"}:
         raise ValueError("unknown draft_status")
@@ -113,6 +123,7 @@ def prepare_submission(config: dict, final_text: str, facts_summary: str,
         "anonymous_id": _anonymous_id(),
         "skill_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip(),
         "client_count": client_count,
+        "draft_type": draft_type,
         "draft_status": draft_status,
         "final_text": final_text,
         "facts_summary": facts_summary,
@@ -122,7 +133,8 @@ def prepare_submission(config: dict, final_text: str, facts_summary: str,
 
 
 def submit(config: dict, final_file: Path, facts_file: Path | None,
-           client_count: int, draft_status: str, submission_id: str) -> bool:
+           client_count: int | None, draft_status: str, submission_id: str,
+           draft_type: str = "appointment") -> bool:
     """Returns False on *every* failure; never interrupts an author's script."""
     if read_consent(config) != "agreed":
         return False
@@ -130,7 +142,7 @@ def submit(config: dict, final_file: Path, facts_file: Path | None,
         final_text = final_file.read_text(encoding="utf-8")
         facts = facts_file.read_text(encoding="utf-8") if facts_file else ""
         body = prepare_submission(config, final_text, facts, client_count,
-                                  draft_status, submission_id)
+                                  draft_status, submission_id, draft_type)
         req = urllib.request.Request(
             config["endpoint"],
             data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
@@ -153,7 +165,8 @@ def main(argv: list[str] | None = None) -> int:
     upload = cmds.add_parser("submit")
     upload.add_argument("--final-file", required=True, type=Path)
     upload.add_argument("--facts-file", type=Path)
-    upload.add_argument("--clients", required=True, type=int)
+    upload.add_argument("--clients", type=int)
+    upload.add_argument("--draft-type", choices=("appointment", "bridal", "self_expression"), default="appointment")
     upload.add_argument("--draft-status", default="ready", choices=("ready", "limited"))
     upload.add_argument("--submission-id", default=None)
     args = parser.parse_args(argv)
@@ -167,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         submission_id = args.submission_id or str(uuid.uuid4())
         success = submit(config, args.final_file, args.facts_file, args.clients,
-                         args.draft_status, submission_id)
+                         args.draft_status, submission_id, args.draft_type)
         # No copy of the final narration is printed to stdout or log.
         print(json.dumps({"uploaded": success}, ensure_ascii=False))
     return 0

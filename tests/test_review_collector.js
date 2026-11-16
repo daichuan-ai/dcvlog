@@ -95,3 +95,17 @@ test('database adapter uses private token and ignores repeated submission IDs', 
     global.fetch = originalFetch;
   }
 });
+for (const draftType of ['appointment','bridal','self_expression']) {
+  test('v2 complete delivery persists type and full content: '+draftType, async()=>{
+    const body=JSON.parse(valid().body);Object.assign(body,{draft_type:draftType,consent_version:'2026-11-16-v2',client_count:draftType==='self_expression'?null:1,final_text:'完整交付内容：'+['第一版正文或剪辑画面与旁白','第二版正文或独立旁白录制稿','第三版完整正文，保留结尾。'].join('\n')});
+    let row;const out=await handleEvent({httpMethod:'POST',body:JSON.stringify(body)},env,async value=>row=value);
+    assert.equal(out.statusCode,200);assert.equal(row.draft_type,draftType);assert.equal(row.final_text,body.final_text);assert.equal(row.client_count,body.client_count);
+    if(draftType!=='appointment'){body.consent_version='2026-10-18-v1';assert.equal((await handleEvent({httpMethod:'POST',body:JSON.stringify(body)},env,async()=>assert.fail('must not persist'))).statusCode,403);}
+  });
+}
+test('invalid type and fabricated client counts cannot persist',async()=>{
+  for(const [type,count] of [['text_polish',1],['self_expression',1],['bridal',null],['appointment',0]]){
+    const body={...JSON.parse(valid().body),draft_type:type,client_count:count,consent_version:'2026-11-16-v2'};
+    assert.equal((await handleEvent({httpMethod:'POST',body:JSON.stringify(body)},env,async()=>assert.fail())).statusCode,400);
+  }
+});

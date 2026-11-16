@@ -2,6 +2,6 @@
   "enabled": true,
   "provider": "cloudbase",
   "endpoint": "https://dcvlog-stats-d9gzdcrf2d74a0e24-1501810800.ap-shanghai.app.tcloudbase.com/dcvlog-review",
-  "consent_version": "2026-10-18-v1",
+  "consent_version": "2026-11-16-v2",
   "timeout_seconds": 4.0
 }

@@ -1,6 +1,6 @@
 # 代川 DCVlog｜化妆师 Vlog 编导
 
-当前版本 **2.6.1**。在已安装DCVlog的WorkBuddy或其他兼容宿主中新开对话，输入 `/DCVlog`（大小写均可）。先沿用自动更新器，在本次实际加载目录同步官方main的完整包并重读，再选择：
+当前版本 **2.6.2**。在已安装DCVlog的WorkBuddy或其他兼容宿主中新开对话，输入 `/DCVlog`（大小写均可）。先沿用自动更新器，在本次实际加载目录同步官方main的完整包并重读，再选择：
 
 1. **约妆 Vlog 旁白**：原有真实服务采访、成熟案例、开场与结尾确认、试读和语气定型。
 2. **新娘跟妆 Vlog 旁白**：使用 bridal-story-interview 0.1.0：摆画面、逐节点回忆、选事件、确认中心意思、选固定高燃开头文案与钩子、写稿、审读、确认现场音；先交剪辑稿，再交旁白录制稿。
@@ -46,7 +46,7 @@ WorkBuddy、豆包未直接发现公共源时，安装 AI 使用包内 `scripts/
 
 唯一可安装入口为 `skills/dcvlog/SKILL.md`；根目录不再放 SKILL.md。根目录工具和参考副本仅保留历史兼容与开发用途。跟妆入口为 `references/bridal-story-interview/index.md`；`references/bridal-interview.md` 仅作旧路径跳转。真实表达入口为 [`references/self-expression/index.md`](skills/dcvlog/references/self-expression/index.md)，原样内置代川指定的 v0.4 r6 主文件与同目录 `viral-polish.md`，完整执行采访、内部切口竞争、路线图、成稿与最多三版交付，模块 B 的流程边界以主文件为准，不另装独立技能。通用润色入口为 `references/text-polish/index.md`，完整内置 shu-text-polish 3.1.0 方法、原作与选句标尺、改写示例、语言特点和49条出处索引，内部相对链接以该目录为起点，无需另装子技能。不同宿主见 `INSTALL_WORKBUDDY.md`、`INSTALL_DOUABO.md`。
 
-约妆原始案例保持原字节。约妆匿名事件与原有自愿收稿许可沿用既有规则；跟妆、真实表达与通用润色不上传采访或稿件，第三项不沿用约妆收稿许可、不新增统计事件。
+约妆原始案例保持原字节。约妆匿名事件与原有自愿收稿许可沿用既有规则；约妆、新娘、真实表达在学员同意新版收稿说明后自动回传完整成稿，统一显示在管理员后台投稿记录；新娘包含剪辑稿和旁白，真实表达包含本次交付的所有版本。采访、照片与通用润色不上传。不新增统计事件。
 
 ## 发布与验证
 

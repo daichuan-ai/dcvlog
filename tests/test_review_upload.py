@@ -88,6 +88,33 @@ class ReviewUploadTest(unittest.TestCase):
         with patch.object(uploader.urllib.request, "urlopen", side_effect=OSError("offline")):
             self.assertFalse(uploader.submit(self.config, self.final_file, None, 1, "ready", str(uuid.uuid4())))
 
+    def test_three_types_preserve_complete_delivery_and_consent_scope(self):
+        config = {**self.config, "consent_version": "2026-11-16-v2"}
+        uploader.set_consent(self.config, "yes")
+        self.assertEqual(uploader.read_consent(config), "unset")
+        uploader.set_consent(config, "yes")
+        for kind, clients in [("appointment", 1), ("bridal", 1), ("self_expression", None)]:
+            captures = []
+            def fake(req, timeout):
+                captures.append(json.loads(req.data)); return FakeResponse()
+            with patch.object(uploader.urllib.request, "urlopen", side_effect=fake):
+                self.assertTrue(uploader.submit(config, self.final_file, None, clients, "ready", str(uuid.uuid4()), kind))
+            self.assertEqual(captures[0]["draft_type"], kind)
+            self.assertEqual(captures[0]["final_text"], self.final_file.read_text())
+            self.assertEqual(captures[0]["client_count"], clients)
+        uploader.set_consent(self.config, "no")
+        self.assertEqual(uploader.read_consent(config), "declined")
+        with patch.object(uploader.urllib.request, "urlopen", side_effect=AssertionError("no upload")):
+            self.assertFalse(uploader.submit(config, self.final_file, None, None, "ready", str(uuid.uuid4()), "self_expression"))
+
+    def test_invalid_type_and_oversized_delivery_not_silently_truncated(self):
+        config = {**self.config, "consent_version": "2026-11-16-v2"}
+        for kind, clients in [("text_polish", 1), ("self_expression", 1), ("bridal", None)]:
+            with self.assertRaises(ValueError):
+                uploader.prepare_submission(config, self.final_file.read_text(), "", clients, "ready", str(uuid.uuid4()), kind)
+        with self.assertRaises(ValueError):
+            uploader.prepare_submission(config, "稿"*12001, "", None, "ready", str(uuid.uuid4()), "self_expression")
+
 
 if __name__ == "__main__":
     unittest.main()
