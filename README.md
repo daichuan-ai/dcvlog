@@ -1,10 +1,10 @@
 # 代川 DCVlog｜化妆师 Vlog 编导
 
-当前版本 **2.6.0**。在已安装DCVlog的WorkBuddy或其他兼容宿主中新开对话，输入 `/DCVlog`（大小写均可）。先沿用自动更新器，在本次实际加载目录同步官方main的完整包并重读，再选择：
+当前版本 **2.6.1**。在已安装DCVlog的WorkBuddy或其他兼容宿主中新开对话，输入 `/DCVlog`（大小写均可）。先沿用自动更新器，在本次实际加载目录同步官方main的完整包并重读，再选择：
 
 1. **约妆 Vlog 旁白**：原有真实服务采访、成熟案例、开场与结尾确认、试读和语气定型。
 2. **新娘跟妆 Vlog 旁白**：使用 bridal-story-interview 0.1.0：摆画面、逐节点回忆、选事件、确认中心意思、选固定高燃开头文案与钩子、写稿、审读、确认现场音；先交剪辑稿，再交旁白录制稿。
-3. **化妆师真实表达**：多线访谈、真实素材记录、方向比较与推荐，由本人选择后整理可继续修改的口语初稿。价值观通过具体事件里的行动和取舍显露，不强制套成熟范本或营销稿。
+3. **化妆师真实表达**：按 v0.4 r6 采访取材，后台按观众体验比较切口，交付最多三份完整口播稿供选择；备用稿按需标明缺料，保留本人说话方式。
 
 4. **通用文字润色**：贴入已有原文，运用遣词造句、隐喻、联想、词义呼应和自然表达增强字句；适用任意题材，保留原意与作者声音，不主动套文章或短视频结构。
 
@@ -42,11 +42,13 @@ WorkBuddy、豆包未直接发现公共源时，安装 AI 使用包内 `scripts/
 
 ## 文件入口
 
-唯一可安装入口为 `skills/dcvlog/SKILL.md`；根目录不再放 SKILL.md。根目录工具和参考副本仅保留历史兼容与开发用途。跟妆入口为 `references/bridal-story-interview/index.md`；`references/bridal-interview.md` 仅作旧路径跳转。真实表达入口为 [`references/self-expression/index.md`](skills/dcvlog/references/self-expression/index.md)，原样内置代川指定的 v0.4 r4 单文件，完整执行采访、开头选择、路线图与成稿，不另装独立技能。通用润色入口为 `references/text-polish/index.md`，完整内置 shu-text-polish 3.0.0 方法、原作与选句标尺、改写示例、语言特点和49条出处索引，内部相对链接以该目录为起点，无需另装子技能。不同宿主见 `INSTALL_WORKBUDDY.md`、`INSTALL_DOUABO.md`。
+唯一可安装入口为 `skills/dcvlog/SKILL.md`；根目录不再放 SKILL.md。根目录工具和参考副本仅保留历史兼容与开发用途。跟妆入口为 `references/bridal-story-interview/index.md`；`references/bridal-interview.md` 仅作旧路径跳转。真实表达入口为 [`references/self-expression/index.md`](skills/dcvlog/references/self-expression/index.md)，原样内置代川指定的 v0.4 r6 主文件与同目录 `viral-polish.md`，完整执行采访、内部切口竞争、路线图、成稿与最多三版交付，模块 B 的流程边界以主文件为准，不另装独立技能。通用润色入口为 `references/text-polish/index.md`，完整内置 shu-text-polish 3.0.0 方法、原作与选句标尺、改写示例、语言特点和49条出处索引，内部相对链接以该目录为起点，无需另装子技能。不同宿主见 `INSTALL_WORKBUDDY.md`、`INSTALL_DOUABO.md`。
 
 约妆原始案例保持原字节。约妆匿名事件与原有自愿收稿许可沿用既有规则；跟妆、真实表达与通用润色不上传采访或稿件，第三项不沿用约妆收稿许可、不新增统计事件。
 
 ## 发布与验证
+
+2.6.1 原样接入真实表达 v0.4 r6 与配套传播精修文件，并将两份文件纳入完整包校验。沿用启动自动更新；2.6.0 的新娘跟妆分支保持不变。
 
 2.6.0 将原第 2 项接到代川提供的独立采访包，保留其他编号与更新机制。为保持 DCVlog 为唯一可安装入口，内置主文件沿用仓库模块规范命名为 index.md，相对引用结构保留；源包正文只修正开头残留的“只交一份”为与正文一致的“两份交付”。旧跟妆文件保留供历史版本兼容，不能作为新版创作规则加载。以下旧版本描述仅作发布历史。工程检查不代表文案验收或手机云端实测。
 
