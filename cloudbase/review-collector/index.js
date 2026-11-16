@@ -6,11 +6,14 @@
 // the HTTP caller's consent claim cannot independently prove human consent.
 const { randomUUID } = require("node:crypto");
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const CONSENT_VERSION = "2026-10-18-v1";
+const CONSENT_VERSION = "2026-11-16-v2";
+const LEGACY_CONSENT_VERSION = "2026-10-18-v1";
 
 function respond(statusCode, message, fields = {}) {
-  return { statusCode, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
-    body: JSON.stringify({ ...fields, message }) };
+  return {
+    statusCode, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
+    body: JSON.stringify({ ...fields, message })
+  };
 }
 
 function maskContacts(text) {
@@ -34,16 +37,19 @@ function validate(event, env) {
   const publicBetaEnabled = env.REVIEW_PUBLIC_BETA === "true";
   if (!publicBetaEnabled && !allowed.size) return { error: respond(503, "collector_not_enabled") };
   if (!UUID.test(data.anonymous_id || "") ||
-      (!publicBetaEnabled && !allowed.has(data.anonymous_id.toLowerCase()))) {
+    (!publicBetaEnabled && !allowed.has(data.anonymous_id.toLowerCase()))) {
     return { error: respond(403, "device_not_in_pilot") };
   }
-  if (data.consent !== true || data.consent_version !== CONSENT_VERSION) {
-    return { error: respond(403, "consent_required") };
-  }
+  const draftType = data.draft_type === undefined ? "appointment" : data.draft_type;
+  if (!["appointment", "bridal", "self_expression"].includes(draftType)) return { error: respond(400, "invalid_draft_type") };
+  const consentValid = data.consent_version === CONSENT_VERSION ||
+    (draftType === "appointment" && data.consent_version === LEGACY_CONSENT_VERSION);
+  if (data.consent !== true || !consentValid) return { error: respond(403, "consent_required") };
+  const clientsValid = draftType === "self_expression" ? data.client_count === null :
+    Number.isInteger(data.client_count) && data.client_count >= 1 && data.client_count <= 20;
   if (!UUID.test(data.submission_id || "") || !/^\d+\.\d+\.\d+$/.test(data.skill_version || "") ||
-!Number.isInteger(data.client_count) ||
-      data.client_count < 1 || data.client_count > 20 || !["ready", "limited"].includes(data.draft_status) ||
-      typeof data.final_text !== "string" || typeof data.facts_summary !== "string") {
+    !clientsValid || !["ready", "limited"].includes(data.draft_status) ||
+    typeof data.final_text !== "string" || typeof data.facts_summary !== "string") {
     return { error: respond(400, "invalid_fields") };
   }
   const finalText = maskContacts(data.final_text.trim());
@@ -51,10 +57,14 @@ function validate(event, env) {
   if (finalText.length < 20 || finalText.length > 12000 || facts.length > 1600) {
     return { error: respond(400, "invalid_length") };
   }
-  return { row: { submission_id: data.submission_id, anonymous_id: data.anonymous_id,
-    skill_version: data.skill_version, client_count: data.client_count,
-    draft_status: data.draft_status, final_text: finalText, facts_summary: facts,
-    consent_version: data.consent_version } };
+  return {
+    row: {
+      submission_id: data.submission_id, anonymous_id: data.anonymous_id,
+      skill_version: data.skill_version, client_count: data.client_count, draft_type: draftType,
+      draft_status: data.draft_status, final_text: finalText, facts_summary: facts,
+      consent_version: data.consent_version
+    }
+  };
 }
 
 async function persistToCloudbase(row, env) {
