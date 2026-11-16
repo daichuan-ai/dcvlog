@@ -8,6 +8,8 @@
 
 4. **通用文字润色**：贴入已有原文，运用遣词造句、隐喻、联想、词义呼应和自然表达增强字句；适用任意题材，保留原意与作者声音，不主动套文章或短视频结构。
 
+润色完成后默认以少量粗体标出语义重点，必要时将完整重点句提行；支持括号提示、只标不改或纯正文。重点依据判断区别、联想落点与上下文收束来选，不将全文加粗或拆成金句。
+
 用法：`/DCVlog` → 选择 **4** → 发原文。采用当前 WorkBuddy 所选模型，无需再配置 API。
 
 ## 新学员安装
@@ -42,7 +44,7 @@ WorkBuddy、豆包未直接发现公共源时，安装 AI 使用包内 `scripts/
 
 ## 文件入口
 
-唯一可安装入口为 `skills/dcvlog/SKILL.md`；根目录不再放 SKILL.md。根目录工具和参考副本仅保留历史兼容与开发用途。跟妆入口为 `references/bridal-story-interview/index.md`；`references/bridal-interview.md` 仅作旧路径跳转。真实表达入口为 [`references/self-expression/index.md`](skills/dcvlog/references/self-expression/index.md)，原样内置代川指定的 v0.4 r6 主文件与同目录 `viral-polish.md`，完整执行采访、内部切口竞争、路线图、成稿与最多三版交付，模块 B 的流程边界以主文件为准，不另装独立技能。通用润色入口为 `references/text-polish/index.md`，完整内置 shu-text-polish 3.0.0 方法、原作与选句标尺、改写示例、语言特点和49条出处索引，内部相对链接以该目录为起点，无需另装子技能。不同宿主见 `INSTALL_WORKBUDDY.md`、`INSTALL_DOUABO.md`。
+唯一可安装入口为 `skills/dcvlog/SKILL.md`；根目录不再放 SKILL.md。根目录工具和参考副本仅保留历史兼容与开发用途。跟妆入口为 `references/bridal-story-interview/index.md`；`references/bridal-interview.md` 仅作旧路径跳转。真实表达入口为 [`references/self-expression/index.md`](skills/dcvlog/references/self-expression/index.md)，原样内置代川指定的 v0.4 r6 主文件与同目录 `viral-polish.md`，完整执行采访、内部切口竞争、路线图、成稿与最多三版交付，模块 B 的流程边界以主文件为准，不另装独立技能。通用润色入口为 `references/text-polish/index.md`，完整内置 shu-text-polish 3.1.0 方法、原作与选句标尺、改写示例、语言特点和49条出处索引，内部相对链接以该目录为起点，无需另装子技能。不同宿主见 `INSTALL_WORKBUDDY.md`、`INSTALL_DOUABO.md`。
 
 约妆原始案例保持原字节。约妆匿名事件与原有自愿收稿许可沿用既有规则；跟妆、真实表达与通用润色不上传采访或稿件，第三项不沿用约妆收稿许可、不新增统计事件。
 
