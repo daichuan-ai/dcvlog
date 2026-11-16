@@ -55,6 +55,7 @@ REQUIRED = (
     "references/bridal-storycraft.md", "references/bridal-opening.md",
     "references/bridal-emotion.md", "references/bridal-opening-patterns.md",
     "references/self-expression/index.md",
+    "references/self-expression/viral-polish.md",
     "references/self-expression/interview-branches.md",
     "references/self-expression/material-memory.md",
     "references/self-expression/direction-comparison.md",
