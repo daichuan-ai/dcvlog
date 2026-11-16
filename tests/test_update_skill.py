@@ -26,6 +26,7 @@ TEXT_POLISH_FILES = (
 )
 SELF_EXPRESSION_FILES = (
     "references/self-expression/index.md",
+    "references/self-expression/viral-polish.md",
     "references/self-expression/interview-branches.md",
     "references/self-expression/material-memory.md",
     "references/self-expression/direction-comparison.md",

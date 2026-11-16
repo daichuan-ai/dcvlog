@@ -8,7 +8,8 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / 'skills/dcvlog'
-MODULES = {'references/self-expression/index.md'}
+MODULES = {'references/self-expression/index.md',
+           'references/self-expression/viral-polish.md'}
 
 SPEC = importlib.util.spec_from_file_location(
     'self_expression_updater', SKILL / 'tools/update_skill.py')
@@ -41,6 +42,14 @@ class SelfExpressionPackageTests(unittest.TestCase):
                 r'references/self-expression/[a-z-]+\.md', path.read_text()))
         self.assertTrue(MODULES.issubset(visited))
         self.assertEqual(list((SKILL / 'references/self-expression').rglob('SKILL.md')), [])
+
+    def test_r6_release_preserves_authorized_source_bytes(self):
+        hashes = {
+            'index.md': '93b5e28547009e12ecc7116c77be9af02b630d25dbb377cf2223510c06581329',
+            'viral-polish.md': '2716fcbaf044758adea7bfa50e98762e3dcbc0d9401ada7362f14a45696aeb6b',
+        }
+        for name, expected in hashes.items():
+            self.assertEqual(updater.file_hash(SKILL / 'references/self-expression' / name), expected)
 
     def test_release_versions_agree_across_install_channels(self):
         version = (ROOT / 'VERSION').read_text().strip()
